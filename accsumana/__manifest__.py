@@ -14,7 +14,7 @@
         "l10n_th_amount_to_text",
         "l10n_th_base_sequence",
         "l10n_th_base_utils",
-        # "l10n_th_mis_report",  # TODO: รอ mis_builder port ไป 19.0
+        "l10n_th_mis_report",
         "l10n_th_partner",
         "l10n_th_tier_department",
     ],
