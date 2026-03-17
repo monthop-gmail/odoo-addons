@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2020 Ecosoft Co., Ltd (http://ecosoft.co.th/)
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html) -->
+<odoo>
+    <record id="hr_expense_view_form" model="ir.ui.view">
+        <field name="name">hr.expense.view.form</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="inside">
+                <group
+                    name="tax"
+                    string="Tax Details"
+                    invisible="not tax_ids and not wht_tax_id"
+                >
+                    <field
+                        name="bill_partner_id"
+                        force_save="1"
+                        readonly="state != 'draft'"
+                        title="Vendor related to tax invoice and withholding tax"
+                    />
+                    <field name="tax_number" />
+                    <field name="tax_date" />
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='tax_ids']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+                <attribute name="groups" />
+            </xpath>
+            <xpath expr="//label[@for='tax_ids']" position="before">
+                <field
+                    name="wht_tax_id"
+                    options="{'no_create': True}"
+                    readonly="state != 'draft'"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>
