@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="ir_sequence_form_inherit" model="ir.ui.view">
+        <field name="name">sequence_view_inherit_branch</field>
+        <field name="model">ir.sequence</field>
+        <field name="inherit_id" ref="l10n_th_base_sequence.ir_sequence_form_inherit" />
+        <field name="priority" eval="70" />
+        <field name="arch" type="xml">
+            <xpath expr="//span[contains(., 'qoy')]" position="after">
+                <span colspan="2">Company branch number (5-digit): %%(b5)s</span>
+                <span colspan="2">Company branch number (4-digit): %%(b4)s</span>
+                <span colspan="2">Company branch number (3-digit): %%(b3)s</span>
+                <span colspan="2">Company branch number (2-digit): %%(b2)s</span>
+                <span colspan="2">Company branch number (1-digit): %%(b1)s</span>
+            </xpath>
+        </field>
+    </record>
+</odoo>

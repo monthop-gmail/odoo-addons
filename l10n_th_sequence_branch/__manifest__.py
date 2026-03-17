@@ -1,0 +1,14 @@
+{
+    "name": "Thai Localization - Sequence with Company Branch",
+    "version": "19.0.1.0.0",
+    "category": "Localization",
+    "website": "https://github.com/OCA/l10n-thailand",
+    "author": "Sansiri Tanachutiwat, Odoo Community Association (OCA)",
+    "depends": [
+        "l10n_th_partner",
+        "l10n_th_base_sequence",
+    ],
+    "data": ["views/ir_sequence_view.xml"],
+    "license": "AGPL-3",
+    "installable": True,
+}
