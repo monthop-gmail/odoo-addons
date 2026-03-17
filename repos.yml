@@ -1,0 +1,46 @@
+# gitaggregate configuration
+# Usage: pip install git-aggregator && gitaggregate -c repos.yml
+#
+# This pulls OCA modules from our forks (with pending migration PRs)
+# Once PRs are merged upstream, switch remotes from monthop → oca
+
+./server-ux:
+  remotes:
+    oca: https://github.com/OCA/server-ux.git
+    monthop: https://github.com/monthop-gmail/server-ux.git
+  merges:
+    - oca 19.0
+    - monthop 19.0-mig-base_tier_validation
+    - monthop 19.0-mig-base_tier_validation_formula
+  target: monthop merge-19.0
+
+./l10n-thailand:
+  remotes:
+    oca: https://github.com/OCA/l10n-thailand.git
+    monthop: https://github.com/monthop-gmail/l10n-thailand.git
+  merges:
+    - oca 19.0
+    - monthop 19.0-mig-l10n_th_account_tax
+    - monthop 19.0-mig-l10n_th_account_tax_report
+    - monthop 19.0-mig-l10n_th_account_wht_cert_form
+    - monthop 19.0-mig-l10n_th_mis_report
+    - monthop 19.0-mig-l10n_th_partner
+    - monthop 19.0-mig-l10n_th_tier_department
+    - monthop 19.0-mig-l10n_th_tier_department_demo
+  target: monthop merge-19.0
+
+./partner-contact:
+  remotes:
+    oca: https://github.com/OCA/partner-contact.git
+  merges:
+    - oca 19.0
+  target: oca 19.0
+
+./mis-builder:
+  remotes:
+    oca: https://github.com/OCA/mis-builder.git
+    versada: https://github.com/versada/mis-builder.git
+  merges:
+    - oca 19.0
+    - versada 19.0-mig-mis_builder
+  target: versada merge-19.0
