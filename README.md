@@ -1,24 +1,32 @@
-# Accsumana — Thai Accounting Addons for Odoo 19
+# ThaiACC — Thai Accounting Addons for Odoo 19
 
 Custom and migrated Thai localization modules for Odoo 19, built on top of [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand).
 
+## Quick Install
+
+| Module | What you get |
+|--------|-------------|
+| **thaiacc** | Everything below in one click (recommended) |
+| **accsumana** | Core OCA Thai modules only |
+
 ## Modules
 
-### Core (meta-package)
+### Meta-packages
 
-| Module | Description |
-|--------|-------------|
-| **accsumana** | Install all Thai accounting modules in one click |
+| Module | Description | Includes |
+|--------|-------------|----------|
+| **thaiacc** | Thai Accounting Complete Suite | accsumana + all optional modules below |
+| **accsumana** | Core Thai Accounting | l10n_th_account_tax, l10n_th_partner, l10n_th_mis_report, etc. (10 OCA modules) |
 
-### Migrated from OCA
+### Optional Modules (included in thaiacc)
 
-| Module | Description | Migrated From | OCA Source |
-|--------|-------------|---------------|------------|
-| **l10n_th_account_tax_expense** | Expense Tax Invoice + WHT on Expense | PR #498 (18.0) | [l10n-thailand](https://github.com/OCA/l10n-thailand) |
-| **l10n_th_promptpay** | PromptPay QR code on website checkout | OCA 16.0 | [l10n-thailand](https://github.com/OCA/l10n-thailand) |
-| **l10n_th_base_sequence** | Buddhist Era, Quarter, Range End legends for sequences | monthop fork 19.0 | [l10n-thailand](https://github.com/OCA/l10n-thailand) |
-| **l10n_th_sequence_branch** | Company branch legends `%(b1-b5)s` for sequences | OCA 14.0 | [l10n-thailand](https://github.com/OCA/l10n-thailand) |
-| **l10n_th_company_novat** | Company/Partner VAT/NOVAT setup, block taxes for non-VAT | OCA 14.0 | [l10n-thailand](https://github.com/OCA/l10n-thailand) |
+| Module | Description | Migrated From |
+|--------|-------------|---------------|
+| **l10n_th_account_tax_expense** | Expense Tax Invoice + WHT on Expense | PR #498 (18.0) |
+| **l10n_th_company_novat** | Company/Partner VAT/NOVAT setup, block taxes for non-VAT | OCA 14.0 |
+| **l10n_th_base_sequence** | Buddhist Era, Quarter, Range End legends for sequences | monthop fork 19.0 |
+| **l10n_th_sequence_branch** | Company branch legends `%(b1-b5)s` for sequences | OCA 14.0 |
+| **l10n_th_promptpay** | PromptPay QR code on website checkout | OCA 16.0 |
 
 ### OCA Dependencies (via gitaggregate)
 
@@ -64,10 +72,11 @@ pip install promptpay  # Required by l10n_th_promptpay
 ### Completed (in this repo)
 
 - [x] l10n_th_account_tax_expense (Part 1: tax invoice + WHT)
-- [x] l10n_th_promptpay
+- [x] l10n_th_company_novat
 - [x] l10n_th_base_sequence
 - [x] l10n_th_sequence_branch
-- [x] l10n_th_company_novat
+- [x] l10n_th_promptpay
+- [x] thaiacc (meta-package)
 
 ### Deferred
 
@@ -86,7 +95,7 @@ pip install promptpay  # Required by l10n_th_promptpay
 
 ## License
 
-- **accsumana**: [LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
+- **accsumana**, **thaiacc**: [LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
 - **All other modules**: [AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)
 
 ## Credits
