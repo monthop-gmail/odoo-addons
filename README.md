@@ -57,7 +57,17 @@
 
 ## วิธีติดตั้ง
 
-### ติดตั้งด้วย gitaggregate
+### วิธี A: GitHub Codespaces (แนะนำ)
+
+กดปุ่ม **Code > Codespaces > Create codespace on 19.0** บน GitHub แล้วรอ — ได้ Odoo 19 + PostgreSQL + OCA modules พร้อมใช้เลย
+
+เริ่ม Odoo:
+```bash
+odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo -i thaiacc
+```
+เปิด browser: `http://localhost:8069`
+
+### วิธี B: ติดตั้งเองด้วย gitaggregate
 
 ```bash
 # Clone repo นี้
@@ -65,17 +75,11 @@ git clone -b 19.0 https://github.com/monthop-gmail/thaiacc-odoo.git
 cd thaiacc-odoo
 
 # ติดตั้ง gitaggregate แล้วดึง OCA dependencies
-pip install git-aggregator
+pip install git-aggregator promptpay
 gitaggregate -c repos.yml
 
 # เพิ่มใน addons_path ใน odoo.conf:
 addons_path = /path/to/thaiacc-odoo,/path/to/thaiacc-odoo/l10n-thailand,/path/to/thaiacc-odoo/partner-contact,/path/to/thaiacc-odoo/server-ux,/path/to/thaiacc-odoo/mis-builder,/path/to/thaiacc-odoo/reporting-engine
-```
-
-### Python Dependencies
-
-```bash
-pip install promptpay  # จำเป็นสำหรับ l10n_th_promptpay
 ```
 
 ## สถานะการ Migrate

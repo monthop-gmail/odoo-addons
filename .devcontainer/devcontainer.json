@@ -1,0 +1,30 @@
+{
+  "name": "ThaiACC - Odoo 19 Dev",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "odoo",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [8069, 8072],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "mstuttgart.odoo-snippets"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.analysis.extraPaths": [
+          "/usr/lib/python3/dist-packages",
+          "/workspace",
+          "/workspace/l10n-thailand",
+          "/workspace/partner-contact",
+          "/workspace/server-ux",
+          "/workspace/mis-builder",
+          "/workspace/reporting-engine"
+        ]
+      }
+    }
+  }
+}

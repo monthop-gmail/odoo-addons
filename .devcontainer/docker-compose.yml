@@ -1,0 +1,35 @@
+services:
+  odoo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    command: sleep infinity
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_DB=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
