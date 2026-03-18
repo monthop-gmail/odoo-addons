@@ -57,11 +57,7 @@
 
 ## วิธีติดตั้ง
 
-### วิธี A: Docker (แนะนำ)
-
-ดู [accsumana-modular](https://github.com/monthop-gmail/accsumana-modular) สำหรับ Docker Compose setup
-
-### วิธี B: ติดตั้งเองด้วย gitaggregate
+### ติดตั้งด้วย gitaggregate
 
 ```bash
 # Clone repo นี้
