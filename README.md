@@ -69,7 +69,7 @@ pip install git-aggregator
 gitaggregate -c repos.yml
 
 # เพิ่มใน addons_path ใน odoo.conf:
-addons_path = /path/to/odoo-addons,/path/to/odoo-addons/l10n-thailand,/path/to/odoo-addons/partner-contact,/path/to/odoo-addons/server-ux,/path/to/odoo-addons/mis-builder,/path/to/odoo-addons/reporting-engine
+addons_path = /path/to/thaiacc-odoo,/path/to/thaiacc-odoo/l10n-thailand,/path/to/thaiacc-odoo/partner-contact,/path/to/thaiacc-odoo/server-ux,/path/to/thaiacc-odoo/mis-builder,/path/to/thaiacc-odoo/reporting-engine
 ```
 
 ### Python Dependencies

@@ -3,7 +3,7 @@
 ## Structure
 
 ```
-odoo-addons/                        ← this repo
+thaiacc-odoo/                        ← this repo
 ├── thaiacc/                        ← complete suite (installs everything)
 ├── ocaacc/                      ← core OCA Thai modules
 ├── l10n_th_account_tax_expense/    ← expense tax invoice + WHT
@@ -35,7 +35,7 @@ pip install git-aggregator promptpay
 gitaggregate -c repos.yml
 
 # Add to Odoo addons_path:
-addons_path = odoo-addons,odoo-addons/l10n-thailand,odoo-addons/partner-contact,odoo-addons/server-ux,odoo-addons/mis-builder,odoo-addons/reporting-engine
+addons_path = thaiacc-odoo,thaiacc-odoo/l10n-thailand,thaiacc-odoo/partner-contact,thaiacc-odoo/server-ux,thaiacc-odoo/mis-builder,thaiacc-odoo/reporting-engine
 ```
 
 Then install `thaiacc` from Odoo Apps menu to get everything.
