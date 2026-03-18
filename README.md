@@ -61,7 +61,7 @@
 
 ```bash
 # Clone repo นี้
-git clone -b 19.0 https://github.com/monthop-gmail/odoo-addons.git
+git clone -b 19.0 https://github.com/monthop-gmail/thaiacc-odoo.git
 cd odoo-addons
 
 # ติดตั้ง gitaggregate แล้วดึง OCA dependencies
