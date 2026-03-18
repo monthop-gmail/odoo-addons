@@ -15,6 +15,9 @@ RUN apt-get update \
 RUN pip install --no-cache-dir --break-system-packages \
     git-aggregator promptpay
 
+# Fix shell for odoo user (nologin → bash) so terminal works in Codespaces
+RUN usermod -s /bin/bash odoo
+
 # Git config for gitaggregate merges
 RUN git config --global user.email "dev@thaiacc" \
     && git config --global user.name "ThaiACC Dev"
