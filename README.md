@@ -9,14 +9,29 @@
 | **thaiacc** | ทุกอย่างด้านล่างในคลิกเดียว (แนะนำ) |
 | **accsumana** | เฉพาะโมดูลหลัก OCA Thai เท่านั้น |
 
+## เปรียบเทียบ accsumana vs thaiacc
+
+| ฟีเจอร์ | accsumana | thaiacc |
+|---------|:---------:|:-------:|
+| **โมดูลหลัก OCA** | | |
+| ผังบัญชีไทย (l10n_th) | :white_check_mark: | :white_check_mark: |
+| ภาษีซื้อ/ขาย + ใบกำกับภาษี (l10n_th_account_tax) | :white_check_mark: | :white_check_mark: |
+| รายงานภาษี (l10n_th_account_tax_report) | :white_check_mark: | :white_check_mark: |
+| หนังสือรับรองหัก ณ ที่จ่าย (l10n_th_account_wht_cert_form) | :white_check_mark: | :white_check_mark: |
+| แปลงจำนวนเงินเป็นตัวอักษรไทย (l10n_th_amount_to_text) | :white_check_mark: | :white_check_mark: |
+| เลขที่เอกสาร พ.ศ./ไตรมาส (l10n_th_base_sequence) | :white_check_mark: | :white_check_mark: |
+| ฟอนต์ไทย + ยูทิลิตี้ (l10n_th_base_utils) | :white_check_mark: | :white_check_mark: |
+| รายงาน MIS (l10n_th_mis_report) | :white_check_mark: | :white_check_mark: |
+| ข้อมูลคู่ค้าไทย สาขา/สำนักงานใหญ่ (l10n_th_partner) | :white_check_mark: | :white_check_mark: |
+| อนุมัติตามแผนก (l10n_th_tier_department) | :white_check_mark: | :white_check_mark: |
+| **โมดูลเสริม** | | |
+| ใบกำกับภาษี + WHT บน Expense (l10n_th_account_tax_expense) | | :white_check_mark: |
+| ตั้งค่าบริษัท จด/ไม่จด VAT (l10n_th_company_novat) | | :white_check_mark: |
+| เลขที่เอกสารตามสาขา (l10n_th_sequence_branch) | | :white_check_mark: |
+| QR Code พร้อมเพย์ (l10n_th_promptpay) | | :white_check_mark: |
+| **รวม** | **10 โมดูล** | **14 โมดูล** |
+
 ## รายชื่อโมดูล
-
-### Meta-packages
-
-| โมดูล | รายละเอียด | รวมอะไรบ้าง |
-|--------|-----------|------------|
-| **thaiacc** | ชุดบัญชีไทยครบชุด | accsumana + โมดูลเสริมทั้งหมดด้านล่าง |
-| **accsumana** | บัญชีไทยหลัก | l10n_th_account_tax, l10n_th_partner, l10n_th_mis_report ฯลฯ (10 โมดูล OCA) |
 
 ### โมดูลเสริม (รวมอยู่ใน thaiacc)
 
