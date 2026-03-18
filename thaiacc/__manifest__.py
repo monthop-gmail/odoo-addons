@@ -7,8 +7,8 @@
     "website": "https://sumana.online",
     "license": "LGPL-3",
     "depends": [
-        # Core Thai Accounting (from accsumana)
-        "accsumana",
+        # Core OCA Thai Accounting
+        "ocaacc",
         # Expense Tax Invoice + WHT
         "l10n_th_account_tax_expense",
         # Company/Partner VAT/NOVAT setup

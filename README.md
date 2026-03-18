@@ -7,11 +7,11 @@
 | โมดูล | สิ่งที่ได้ |
 |--------|-----------|
 | **thaiacc** | ทุกอย่างด้านล่างในคลิกเดียว (แนะนำ) |
-| **accsumana** | เฉพาะโมดูลหลัก OCA Thai เท่านั้น |
+| **ocaacc** | เฉพาะโมดูลหลัก OCA Thai เท่านั้น |
 
-## เปรียบเทียบ accsumana vs thaiacc
+## เปรียบเทียบ ocaacc vs thaiacc
 
-| ฟีเจอร์ | accsumana | thaiacc |
+| ฟีเจอร์ | ocaacc | thaiacc |
 |---------|:---------:|:-------:|
 | **โมดูลหลัก OCA** | | |
 | ผังบัญชีไทย (l10n_th) | :white_check_mark: | :white_check_mark: |
@@ -62,7 +62,7 @@
 ```bash
 # Clone repo นี้
 git clone -b 19.0 https://github.com/monthop-gmail/thaiacc-odoo.git
-cd odoo-addons
+cd thaiacc-odoo
 
 # ติดตั้ง gitaggregate แล้วดึง OCA dependencies
 pip install git-aggregator
@@ -106,11 +106,11 @@ pip install promptpay  # จำเป็นสำหรับ l10n_th_promptpay
 
 ## สัญญาอนุญาต
 
-- **accsumana**, **thaiacc**: [LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
+- **ocaacc**, **thaiacc**: [LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
 - **โมดูลอื่นทั้งหมด**: [AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)
 
 ## เครดิต
 
 - [Ecosoft Co., Ltd](https://ecosoft.co.th/) — ผู้พัฒนาโมดูลต้นฉบับ
 - ผู้ร่วมพัฒนา [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand)
-- [Accsumana](https://sumana.online) — migrate และจัดแพ็คเกจสำหรับ Odoo 19
+- [OCA ACC](https://sumana.online) — migrate และจัดแพ็คเกจสำหรับ Odoo 19

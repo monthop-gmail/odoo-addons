@@ -5,7 +5,7 @@
 ```
 odoo-addons/                        ← this repo
 ├── thaiacc/                        ← complete suite (installs everything)
-├── accsumana/                      ← core OCA Thai modules
+├── ocaacc/                      ← core OCA Thai modules
 ├── l10n_th_account_tax_expense/    ← expense tax invoice + WHT
 ├── l10n_th_company_novat/          ← VAT/NOVAT company setup
 ├── l10n_th_base_sequence/          ← sequence legends (BE, quarter, etc.)
