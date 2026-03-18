@@ -1,105 +1,105 @@
-# ThaiACC — Thai Accounting Addons for Odoo 19
+# ThaiACC — โมดูลบัญชีไทยสำหรับ Odoo 19
 
-Custom and migrated Thai localization modules for Odoo 19, built on top of [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand).
+โมดูลบัญชีไทยที่ migrate และปรับแต่งสำหรับ Odoo 19 สร้างบน [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand)
 
-## Quick Install
+## ติดตั้งด่วน
 
-| Module | What you get |
-|--------|-------------|
-| **thaiacc** | Everything below in one click (recommended) |
-| **accsumana** | Core OCA Thai modules only |
+| โมดูล | สิ่งที่ได้ |
+|--------|-----------|
+| **thaiacc** | ทุกอย่างด้านล่างในคลิกเดียว (แนะนำ) |
+| **accsumana** | เฉพาะโมดูลหลัก OCA Thai เท่านั้น |
 
-## Modules
+## รายชื่อโมดูล
 
 ### Meta-packages
 
-| Module | Description | Includes |
-|--------|-------------|----------|
-| **thaiacc** | Thai Accounting Complete Suite | accsumana + all optional modules below |
-| **accsumana** | Core Thai Accounting | l10n_th_account_tax, l10n_th_partner, l10n_th_mis_report, etc. (10 OCA modules) |
+| โมดูล | รายละเอียด | รวมอะไรบ้าง |
+|--------|-----------|------------|
+| **thaiacc** | ชุดบัญชีไทยครบชุด | accsumana + โมดูลเสริมทั้งหมดด้านล่าง |
+| **accsumana** | บัญชีไทยหลัก | l10n_th_account_tax, l10n_th_partner, l10n_th_mis_report ฯลฯ (10 โมดูล OCA) |
 
-### Optional Modules (included in thaiacc)
+### โมดูลเสริม (รวมอยู่ใน thaiacc)
 
-| Module | Description | Migrated From |
-|--------|-------------|---------------|
-| **l10n_th_account_tax_expense** | Expense Tax Invoice + WHT on Expense | PR #498 (18.0) |
-| **l10n_th_company_novat** | Company/Partner VAT/NOVAT setup, block taxes for non-VAT | OCA 14.0 |
-| **l10n_th_base_sequence** | Buddhist Era, Quarter, Range End legends for sequences | monthop fork 19.0 |
-| **l10n_th_sequence_branch** | Company branch legends `%(b1-b5)s` for sequences | OCA 14.0 |
-| **l10n_th_promptpay** | PromptPay QR code on website checkout | OCA 16.0 |
+| โมดูล | รายละเอียด | Migrate จาก |
+|--------|-----------|-------------|
+| **l10n_th_account_tax_expense** | ใบกำกับภาษีค่าใช้จ่าย + ภาษีหัก ณ ที่จ่ายบน Expense | PR #498 (18.0) |
+| **l10n_th_company_novat** | ตั้งค่าบริษัท/คู่ค้า จด/ไม่จด VAT, บล็อคภาษีสำหรับบริษัทไม่จด VAT | OCA 14.0 |
+| **l10n_th_base_sequence** | เลขที่เอกสาร: พ.ศ., ไตรมาส, ช่วงวันที่ | monthop fork 19.0 |
+| **l10n_th_sequence_branch** | เลขที่เอกสารตามสาขาบริษัท `%(b1-b5)s` | OCA 14.0 |
+| **l10n_th_promptpay** | QR Code พร้อมเพย์บนหน้าชำระเงิน Website | OCA 16.0 |
 
-### OCA Dependencies (via gitaggregate)
+### โมดูล OCA ที่ต้องใช้ (ดึงผ่าน gitaggregate)
 
-These are pulled from OCA repositories using `repos.yml`:
+ดึงจาก OCA repositories โดยใช้ `repos.yml`:
 
-| Repo | Key Modules | Fork |
-|------|-------------|------|
+| Repo | โมดูลหลัก | Fork |
+|------|----------|------|
 | [l10n-thailand](https://github.com/OCA/l10n-thailand) | l10n_th_account_tax, l10n_th_partner, l10n_th_mis_report, ... | [monthop-gmail](https://github.com/monthop-gmail/l10n-thailand) |
 | [partner-contact](https://github.com/OCA/partner-contact) | partner_company_type | [monthop-gmail](https://github.com/monthop-gmail/partner-contact) |
 | [server-ux](https://github.com/OCA/server-ux) | base_tier_validation | [monthop-gmail](https://github.com/monthop-gmail/server-ux) |
 | [mis-builder](https://github.com/OCA/mis-builder) | mis_builder | [versada](https://github.com/versada/mis-builder) |
 | [reporting-engine](https://github.com/OCA/reporting-engine) | report_xlsx, report_xlsx_helper | OCA (upstream) |
 
-## Setup
+## วิธีติดตั้ง
 
-### Option A: Docker (recommended)
+### วิธี A: Docker (แนะนำ)
 
-See [accsumana-modular](https://github.com/monthop-gmail/accsumana-modular) for Docker Compose setup.
+ดู [accsumana-modular](https://github.com/monthop-gmail/accsumana-modular) สำหรับ Docker Compose setup
 
-### Option B: Manual with gitaggregate
+### วิธี B: ติดตั้งเองด้วย gitaggregate
 
 ```bash
-# Clone this repo
+# Clone repo นี้
 git clone -b 19.0 https://github.com/monthop-gmail/odoo-addons.git
 cd odoo-addons
 
-# Install gitaggregate and pull OCA dependencies
+# ติดตั้ง gitaggregate แล้วดึง OCA dependencies
 pip install git-aggregator
 gitaggregate -c repos.yml
 
-# Add to Odoo addons_path in odoo.conf:
+# เพิ่มใน addons_path ใน odoo.conf:
 addons_path = /path/to/odoo-addons,/path/to/odoo-addons/l10n-thailand,/path/to/odoo-addons/partner-contact,/path/to/odoo-addons/server-ux,/path/to/odoo-addons/mis-builder,/path/to/odoo-addons/reporting-engine
 ```
 
 ### Python Dependencies
 
 ```bash
-pip install promptpay  # Required by l10n_th_promptpay
+pip install promptpay  # จำเป็นสำหรับ l10n_th_promptpay
 ```
 
-## Migration Status
+## สถานะการ Migrate
 
-### Completed (in this repo)
+### เสร็จแล้ว (อยู่ใน repo นี้)
 
-- [x] l10n_th_account_tax_expense (Part 1: tax invoice + WHT)
+- [x] l10n_th_account_tax_expense (Part 1: ใบกำกับภาษี + ภาษีหัก ณ ที่จ่าย)
 - [x] l10n_th_company_novat
 - [x] l10n_th_base_sequence
 - [x] l10n_th_sequence_branch
 - [x] l10n_th_promptpay
 - [x] thaiacc (meta-package)
 
-### Deferred
+### รอดำเนินการ
 
-- [ ] l10n_th_account_tax_expense Part 2 (advance clearing WHT JV) — waiting for `hr_expense_advance_clearing` on 19.0
-- [ ] l10n_th_google_fonts — third-party only, not in OCA
+- [ ] l10n_th_account_tax_expense Part 2 (สร้าง JV ภาษีหัก ณ ที่จ่ายสำหรับเคลียร์เงินทดรอง) — รอ `hr_expense_advance_clearing` บน 19.0
+- [ ] l10n_th_google_fonts — มีเฉพาะ third-party ไม่อยู่ใน OCA
 
-### Not Needed (already in OCA modules)
+### ไม่ต้องทำ (รวมอยู่ในโมดูล OCA แล้ว)
 
-- ~~l10n_th_sequence_be~~ → merged into `l10n_th_base_sequence`
-- ~~l10n_th_sequence_preview~~ → merged into `l10n_th_base_sequence`
-- ~~l10n_th_sequence_qoy~~ → merged into `l10n_th_base_sequence`
-- ~~l10n_th_sequence_range_end~~ → merged into `l10n_th_base_sequence`
-- ~~l10n_th_expense_tax_invoice~~ → merged into `l10n_th_account_tax_expense`
-- ~~l10n_th_expense_withholding_tax~~ → merged into `l10n_th_account_tax_expense`
-- ~~l10n_th_fonts~~ → replaced by `l10n_th_base_utils`
+- ~~l10n_th_sequence_be~~ → รวมเข้า `l10n_th_base_sequence` แล้ว
+- ~~l10n_th_sequence_preview~~ → รวมเข้า `l10n_th_base_sequence` แล้ว
+- ~~l10n_th_sequence_qoy~~ → รวมเข้า `l10n_th_base_sequence` แล้ว
+- ~~l10n_th_sequence_range_end~~ → รวมเข้า `l10n_th_base_sequence` แล้ว
+- ~~l10n_th_expense_tax_invoice~~ → รวมเข้า `l10n_th_account_tax_expense` แล้ว
+- ~~l10n_th_expense_withholding_tax~~ → รวมเข้า `l10n_th_account_tax_expense` แล้ว
+- ~~l10n_th_fonts~~ → ถูกแทนที่ด้วย `l10n_th_base_utils`
 
-## License
+## สัญญาอนุญาต
 
 - **accsumana**, **thaiacc**: [LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
-- **All other modules**: [AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)
+- **โมดูลอื่นทั้งหมด**: [AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)
 
-## Credits
+## เครดิต
 
-- [Ecosoft Co., Ltd](https://ecosoft.co.th/) — original module authors
-- [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand) contributors
-- [Accsumana](https://sumana.online) — migration & packaging for Odoo 19
+- [Ecosoft Co., Ltd](https://ecosoft.co.th/) — ผู้พัฒนาโมดูลต้นฉบับ
+- ผู้ร่วมพัฒนา [OCA/l10n-thailand](https://github.com/OCA/l10n-thailand)
+- [Accsumana](https://sumana.online) — migrate และจัดแพ็คเกจสำหรับ Odoo 19
