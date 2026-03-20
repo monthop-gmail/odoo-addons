@@ -24,7 +24,7 @@
     - monthop 19.0-mig-l10n_th_account_tax_report
     - monthop 19.0-mig-l10n_th_account_wht_cert_form
     - monthop 19.0-mig-l10n_th_mis_report
-    # l10n_th_partner: merged upstream (PR #586) — no longer needed
+    - monthop 19.0-mig-l10n_th_partner
     - monthop 19.0-mig-l10n_th_tier_department
     - monthop 19.0-mig-l10n_th_tier_department_demo
   target: monthop merge-19.0
@@ -36,10 +36,11 @@
 ./partner-contact:
   remotes:
     oca: https://github.com/OCA/partner-contact.git
+    monthop: https://github.com/monthop-gmail/partner-contact.git
   merges:
     - oca 19.0
-    # partner_company_type: merged upstream (PR #2302) — no longer needed
-  target: oca 19.0
+    - monthop 19.0-mig-partner_company_type
+  target: monthop merge-19.0
 
 ./mis-builder:
   remotes:
