@@ -98,6 +98,10 @@ gitaggregate -c repos.yml
 addons_path = /path/to/thaiacc-odoo,/path/to/thaiacc-odoo/l10n-thailand,/path/to/thaiacc-odoo/partner-contact,/path/to/thaiacc-odoo/server-ux,/path/to/thaiacc-odoo/mis-builder,/path/to/thaiacc-odoo/reporting-engine
 ```
 
+### วิธี C: Docker Compose (สำหรับทดสอบ)
+
+ดูคู่มือทดสอบฉบับเต็มที่ **[TESTING.md](TESTING.md)** — มีขั้นตอน Docker Compose, demo data, เมนูที่ต้องไป, และรายการทดสอบ WHT ครบ
+
 ## สถานะการ Migrate
 
 ### เสร็จแล้ว (อยู่ใน repo นี้)
