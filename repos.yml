@@ -50,3 +50,10 @@
     - oca 19.0
     - versada 19.0-mig-mis_builder
   target: versada merge-19.0
+
+./reporting-engine:
+  remotes:
+    oca: https://github.com/OCA/reporting-engine.git
+  merges:
+    - oca 19.0
+  target: oca 19.0

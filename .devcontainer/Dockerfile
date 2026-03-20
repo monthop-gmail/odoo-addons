@@ -18,8 +18,11 @@ RUN pip install --no-cache-dir --break-system-packages \
 # Fix shell for odoo user (nologin → bash) so terminal works in Codespaces
 RUN usermod -s /bin/bash odoo
 
-# Git config for gitaggregate merges
-RUN git config --global user.email "dev@thaiacc" \
-    && git config --global user.name "ThaiACC Dev"
+# Ensure /workspace is writable by odoo user
+RUN mkdir -p /workspace && chown odoo:odoo /workspace
 
 USER odoo
+
+# Git config for gitaggregate merges (set as odoo user so it persists in ~odoo)
+RUN git config --global user.email "dev@thaiacc" \
+    && git config --global user.name "ThaiACC Dev"

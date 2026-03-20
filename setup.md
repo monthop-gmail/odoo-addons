@@ -22,7 +22,8 @@ After running `gitaggregate -c repos.yml`, these directories are added:
 ├── l10n-thailand/      ← OCA + monthop migration PRs
 ├── server-ux/          ← OCA + monthop tier validation PRs
 ├── partner-contact/    ← OCA + monthop partner_company_type PR
-└── mis-builder/        ← OCA + versada mis_builder PR
+├── mis-builder/        ← OCA + versada mis_builder PR
+└── reporting-engine/   ← OCA report_xlsx, report_xlsx_helper
 ```
 
 ## Quick Start
