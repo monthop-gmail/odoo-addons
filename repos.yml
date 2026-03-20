@@ -20,6 +20,7 @@
     monthop: https://github.com/monthop-gmail/l10n-thailand.git
   merges:
     - oca 19.0
+    - monthop 19.0-mig-l10n_th_base_utils
     - monthop 19.0-mig-l10n_th_account_tax
     - monthop 19.0-mig-l10n_th_account_tax_report
     - monthop 19.0-mig-l10n_th_account_wht_cert_form
