@@ -10,7 +10,9 @@
 2. รอ build (~3-5 นาที) — ระบบจะติดตั้ง Odoo 19 + PostgreSQL + OCA modules ให้อัตโนมัติ
 3. เปิด Terminal แล้วสั่ง:
    ```bash
-   odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 -i thaiacc
+   odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 \
+     --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine \
+     -i thaiacc
    ```
 4. เปิด browser ที่ `http://localhost:8069` — พร้อมใช้งาน!
 
@@ -75,7 +77,9 @@
 
 เริ่ม Odoo:
 ```bash
-odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 -i thaiacc
+odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 \
+  --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine \
+  -i thaiacc
 ```
 เปิด browser: `http://localhost:8069`
 
