@@ -18,6 +18,9 @@
         # PromptPay QR code on website
         "l10n_th_promptpay",
     ],
+    "demo": [
+        "demo/demo_data.xml",
+    ],
     "installable": True,
     "auto_install": False,
     "application": True,

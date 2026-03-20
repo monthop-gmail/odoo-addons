@@ -18,6 +18,9 @@
         "l10n_th_partner",
         "l10n_th_tier_department",
     ],
+    "demo": [
+        "demo/demo_data.xml",
+    ],
     "installable": True,
     "auto_install": False,
     "application": True,

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!--  Demo Vendor (NOVAT - ไม่จด VAT)                            -->
+        <!-- ============================================================ -->
+
+        <record id="demo_vendor_novat" model="res.partner">
+            <field name="name">ร้านป้าแก้ว ขายของชำ</field>
+            <field name="company_type">company</field>
+            <field name="vat">0993560456789</field>
+            <field name="street">12 ตลาดสด ถ.เพชรเกษม</field>
+            <field name="city">นครปฐม</field>
+            <field name="zip">73000</field>
+            <field name="phone">034-567-890</field>
+            <field name="supplier_rank">1</field>
+            <field name="novat" eval="True"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!--  Demo Products for Expense                                   -->
+        <!-- ============================================================ -->
+
+        <record id="demo_product_repair" model="product.template">
+            <field name="name">ค่าซ่อมบำรุง</field>
+            <field name="type">service</field>
+            <field name="list_price">8000</field>
+            <field name="standard_price">8000</field>
+            <field name="can_be_expensed" eval="True"/>
+            <field name="supplier_company_wht_tax_id" ref="ocaacc.demo_wht_3_service"/>
+            <field name="supplier_wht_tax_id" ref="ocaacc.demo_wht_3_service_pnd3"/>
+        </record>
+
+        <record id="demo_product_delivery" model="product.template">
+            <field name="name">ค่าจัดส่งพัสดุ</field>
+            <field name="type">service</field>
+            <field name="list_price">1500</field>
+            <field name="standard_price">1500</field>
+            <field name="can_be_expensed" eval="True"/>
+            <field name="supplier_company_wht_tax_id" ref="ocaacc.demo_wht_1_transport"/>
+        </record>
+
+    </data>
+</odoo>
