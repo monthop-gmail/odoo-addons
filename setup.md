@@ -4,8 +4,15 @@
 
 ```
 thaiacc-odoo/                        ← this repo
+├── .devcontainer/
+│   ├── devcontainer.json           ← docker-in-docker config
+│   ├── Dockerfile                  ← Odoo 19 + Thai fonts + gitaggregate
+│   ├── entrypoint.sh              ← auto: gitaggregate → start Odoo
+│   ├── setup.sh                   ← postCreateCommand
+│   └── start.sh                   ← postStartCommand (docker compose up)
+├── docker-compose.yml              ← Odoo + PostgreSQL services
 ├── thaiacc/                        ← complete suite (installs everything)
-├── ocaacc/                      ← core OCA Thai modules
+├── ocaacc/                         ← core OCA Thai modules
 ├── l10n_th_account_tax_expense/    ← expense tax invoice + WHT
 ├── l10n_th_company_novat/          ← VAT/NOVAT company setup
 ├── l10n_th_base_sequence/          ← sequence legends (BE, quarter, etc.)

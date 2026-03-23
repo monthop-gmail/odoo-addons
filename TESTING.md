@@ -14,39 +14,30 @@
 
 ## วิธี Start ระบบทดสอบ
 
-### ขั้นตอนที่ 1: Clone และ Start containers
+### วิธี A: GitHub Codespaces (แนะนำ)
+
+1. กดปุ่ม **Code > Codespaces > Create codespace on 19.0** บน GitHub
+2. รอ build (~3-5 นาที) — ทุกอย่างจะ start อัตโนมัติ
+3. เปิด browser ที่ port 8069 → Login: **admin / admin**
+
+### วิธี B: Docker Compose (Local)
 
 ```bash
-cd /opt/docker-test/odoo-thaiacc-test
 git clone -b 19.0 https://github.com/monthop-gmail/thaiacc-odoo.git
+cd thaiacc-odoo
 docker compose up -d --build
 ```
 
-### ขั้นตอนที่ 2: ดึง OCA dependencies
+รอประมาณ 2-3 นาที — `entrypoint.sh` จะ:
+1. ดึง OCA dependencies ด้วย gitaggregate (ถ้ายังไม่มี)
+2. Start Odoo พร้อม addons-path ที่ถูกต้อง
 
+ดู log:
 ```bash
-docker compose exec odoo bash -c "cd /workspace && gitaggregate -c repos.yml -j 4"
+docker compose logs -f odoo
 ```
 
-> `reporting-engine` จะถูกดึงมาให้อัตโนมัติ (อยู่ใน repos.yml แล้ว)
-
-### ขั้นตอนที่ 3: Start Odoo
-
-```bash
-docker compose exec -d odoo bash -c "odoo -d thaiacc \
-  --db_host=db --db_user=odoo --db_password=odoo \
-  --http-interface=0.0.0.0 \
-  --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine,/usr/lib/python3/dist-packages/odoo/addons \
-  -i thaiacc --without-demo=False 2>&1 | tee /tmp/odoo.log"
-```
-
-รอประมาณ 2-3 นาที จนเห็น log ว่า `Modules loaded.`
-
-```bash
-docker compose exec odoo bash -c "tail -5 /tmp/odoo.log"
-```
-
-### ขั้นตอนที่ 4: เปิดใช้งาน
+### เปิดใช้งาน
 
 - **URL:** http://localhost:8069
 - **Database:** thaiacc
@@ -197,24 +188,21 @@ docker compose exec odoo bash -c "tail -5 /tmp/odoo.log"
 
 ```bash
 # ดู log แบบ real-time
-docker compose exec odoo bash -c "tail -f /tmp/odoo.log"
+docker compose logs -f odoo
 
 # Restart Odoo (หลังแก้ code)
-docker compose exec odoo bash -c "pkill -f 'odoo -d thaiacc'"
-# แล้ว run คำสั่ง start ใหม่ (ขั้นตอนที่ 3) โดยเปลี่ยน -i เป็น -u เพื่อ update แทน install
+docker compose restart odoo
 
 # Update module เฉพาะตัว
-docker compose exec -d odoo bash -c "odoo -d thaiacc \
+docker compose exec odoo odoo -d thaiacc \
   --db_host=db --db_user=odoo --db_password=odoo \
   --http-interface=0.0.0.0 \
-  --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine,/usr/lib/python3/dist-packages/odoo/addons \
-  -u l10n_th_account_tax_report 2>&1 | tee /tmp/odoo.log"
+  -u l10n_th_account_tax_report --stop-after-init
 
 # Run tests
-docker compose exec odoo bash -c "odoo -d test_db \
+docker compose exec odoo odoo -d test_db \
   --db_host=db --db_user=odoo --db_password=odoo \
-  --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine,/usr/lib/python3/dist-packages/odoo/addons \
-  -i thaiacc --test-enable --test-tags /thaiacc --stop-after-init --without-demo=False"
+  -i thaiacc --test-enable --test-tags /thaiacc --stop-after-init --without-demo=False
 
 # Stop ทุกอย่าง
 docker compose down

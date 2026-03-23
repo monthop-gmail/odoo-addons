@@ -7,14 +7,11 @@
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/monthop-gmail/thaiacc-odoo?ref=19.0)
 
 1. กดปุ่มด้านบน หรือไปที่ **Code > Codespaces > Create codespace on 19.0**
-2. รอ build (~3-5 นาที) — ระบบจะติดตั้ง Odoo 19 + PostgreSQL + OCA modules ให้อัตโนมัติ
-3. เปิด Terminal แล้วสั่ง:
-   ```bash
-   odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 \
-     --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine \
-     -i thaiacc
-   ```
-4. เปิด browser ที่ `http://localhost:8069` — พร้อมใช้งาน!
+2. รอ build (~3-5 นาที) — ระบบจะ start Odoo 19 + PostgreSQL + ดึง OCA modules + init ให้อัตโนมัติ
+3. เปิด browser ที่ port 8069 — พร้อมใช้งาน!
+4. Login: **admin / admin**
+
+> ไม่ต้องพิมพ์ command เพิ่มเติม — ทุกอย่างถูกจัดการผ่าน docker-in-docker โดยอัตโนมัติ
 
 ## ติดตั้งด่วน
 
@@ -73,15 +70,9 @@
 
 ### วิธี A: GitHub Codespaces (แนะนำ)
 
-กดปุ่ม **Code > Codespaces > Create codespace on 19.0** บน GitHub แล้วรอ — ได้ Odoo 19 + PostgreSQL + OCA modules พร้อมใช้เลย
+กดปุ่ม **Code > Codespaces > Create codespace on 19.0** บน GitHub แล้วรอ — ได้ Odoo 19 + PostgreSQL + OCA modules พร้อมใช้เลย ไม่ต้องพิมพ์ command เพิ่มเติม
 
-เริ่ม Odoo:
-```bash
-odoo -d thaiacc --db_host=db --db_user=odoo --db_password=odoo --http-interface=0.0.0.0 \
-  --addons-path=/workspace,/workspace/l10n-thailand,/workspace/partner-contact,/workspace/server-ux,/workspace/mis-builder,/workspace/reporting-engine \
-  -i thaiacc
-```
-เปิด browser: `http://localhost:8069`
+เปิด browser ที่ port 8069 → Login: **admin / admin**
 
 ### วิธี B: ติดตั้งเองด้วย gitaggregate
 
@@ -100,7 +91,15 @@ addons_path = /path/to/thaiacc-odoo,/path/to/thaiacc-odoo/l10n-thailand,/path/to
 
 ### วิธี C: Docker Compose (สำหรับทดสอบ)
 
-ดูคู่มือทดสอบฉบับเต็มที่ **[TESTING.md](TESTING.md)** — มีขั้นตอน Docker Compose, demo data, เมนูที่ต้องไป, และรายการทดสอบ WHT ครบ
+```bash
+git clone -b 19.0 https://github.com/monthop-gmail/thaiacc-odoo.git
+cd thaiacc-odoo
+docker compose up -d --build
+```
+
+Odoo จะ start พร้อม OCA dependencies อัตโนมัติผ่าน entrypoint — เปิด browser: `http://localhost:8069`
+
+ดูคู่มือทดสอบฉบับเต็มที่ **[TESTING.md](TESTING.md)** — มี demo data, เมนูที่ต้องไป, และรายการทดสอบ WHT ครบ
 
 ## สถานะการ Migrate
 
