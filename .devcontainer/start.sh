@@ -12,11 +12,10 @@ for i in $(seq 1 15); do
     sleep 1
 done
 
-# Start existing containers (fast — no build, no create, just start)
-# Falls back to 'up -d' if containers don't exist yet
-docker compose start 2>&1 || docker compose up -d 2>&1 | tail -5
+# Start containers (no --build, images already cached from setup.sh)
+docker compose up -d 2>&1 | tail -5
 
-# Wait for Odoo (DB + modules already cached — just loading)
+# Wait for Odoo
 echo "Waiting for Odoo..."
 for i in $(seq 1 90); do
     if curl -s -o /dev/null -w "%{http_code}" http://localhost:8069/web/login 2>/dev/null | grep -q "200"; then
