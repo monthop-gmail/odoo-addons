@@ -59,4 +59,5 @@ echo "Database 'thaiacc' ready, module installed. Starting Odoo..."
 exec odoo -d thaiacc \
     --db_host=db --db_user=odoo --db_password=odoo \
     --http-interface=0.0.0.0 \
-    --addons-path="$ADDONS_PATH"
+    --addons-path="$ADDONS_PATH" \
+    --max-cron-threads=0
