@@ -52,14 +52,14 @@
     - oca 19.0
   target: oca 19.0
 
+# mis_builder was released on OCA/mis-builder 19.0 (19.0.1.2.0), so the
+# versada migration branch is no longer needed.
 ./mis-builder:
   remotes:
     oca: https://github.com/OCA/mis-builder.git
-    versada: https://github.com/versada/mis-builder.git
   merges:
     - oca 19.0
-    - versada 19.0-mig-mis_builder
-  target: versada merge-19.0
+  target: oca 19.0
 
 ./reporting-engine:
   remotes:
