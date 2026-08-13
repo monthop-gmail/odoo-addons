@@ -12,12 +12,39 @@ done
 echo "PostgreSQL is ready!"
 
 # Pull OCA dependencies if not already present
+cd /workspace
+AGGREGATE_FAILED=""
 if [ ! -d "/workspace/l10n-thailand" ]; then
     echo "Pulling OCA dependencies with gitaggregate..."
-    cd /workspace
-    gitaggregate -c repos.yml -j 4 || true
+    gitaggregate -c repos.yml -j 4 || AGGREGATE_FAILED=1
 else
     echo "OCA dependencies already present."
+fi
+
+# A failed aggregate leaves repos mid-merge with conflict markers in the source.
+# Odoo would only notice much later, as a SyntaxError deep in the module loader,
+# and the check above would then skip re-aggregating forever because the broken
+# directory exists. So verify the result here and say what actually went wrong.
+UNMERGED=""
+for dir in /workspace/*/; do
+    [ -d "$dir.git" ] || continue
+    if [ -n "$(git -C "$dir" ls-files --unmerged 2>/dev/null)" ]; then
+        UNMERGED="$UNMERGED $(basename "$dir")"
+    fi
+done
+
+if [ -n "$AGGREGATE_FAILED" ] || [ -n "$UNMERGED" ]; then
+    echo "" >&2
+    echo "!!! OCA dependency aggregation is incomplete." >&2
+    if [ -n "$UNMERGED" ]; then
+        echo "    Repos left mid-merge:$UNMERGED" >&2
+        echo "    Fix repos.yml or the branches it merges, then re-run:" >&2
+        echo "      cd /workspace && rm -rf$UNMERGED && gitaggregate -c repos.yml -j 4" >&2
+    else
+        echo "    gitaggregate exited non-zero — see the log above." >&2
+    fi
+    echo "    Refusing to start Odoo: it would fail later with a confusing error." >&2
+    exit 1
 fi
 
 # Build addons path (only include dirs that exist)
