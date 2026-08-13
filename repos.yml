@@ -4,15 +4,24 @@
 # This pulls OCA modules from our forks (with pending migration PRs)
 # Once PRs are merged upstream, switch remotes from monthop → oca
 
+# Needed for date_range (l10n_th_account_tax_report depends on it).
+# The tier_validation family moved out of this repo for 19.0 — see ./tier-validation.
 ./server-ux:
   remotes:
     oca: https://github.com/OCA/server-ux.git
-    monthop: https://github.com/monthop-gmail/server-ux.git
   merges:
     - oca 19.0
-    - monthop 19.0-mig-base_tier_validation
-    - monthop 19.0-mig-base_tier_validation_formula
-  target: monthop merge-19.0
+  target: oca 19.0
+
+# New repo in 19.0: the whole tier_validation family was split out of server-ux.
+# Provides base_tier_validation, base_tier_validation_formula,
+# purchase_request_tier_validation.
+./tier-validation:
+  remotes:
+    oca: https://github.com/OCA/tier-validation.git
+  merges:
+    - oca 19.0
+  target: oca 19.0
 
 ./l10n-thailand:
   remotes:
@@ -34,23 +43,23 @@
     # resolve .codecov.yml conflicts from multiple branches
     - rm -f .codecov.yml && git add -A && git diff --cached --quiet || git commit --no-verify -m "[AGG] remove .codecov.yml (not needed in aggregate)"
 
+# partner_company_type was merged upstream via OCA/partner-contact#2161,
+# so the fork branch is no longer needed.
 ./partner-contact:
   remotes:
     oca: https://github.com/OCA/partner-contact.git
-    monthop: https://github.com/monthop-gmail/partner-contact.git
   merges:
     - oca 19.0
-    - monthop 19.0-mig-partner_company_type
-  target: monthop merge-19.0
+  target: oca 19.0
 
+# mis_builder was released on OCA/mis-builder 19.0 (19.0.1.2.0), so the
+# versada migration branch is no longer needed.
 ./mis-builder:
   remotes:
     oca: https://github.com/OCA/mis-builder.git
-    versada: https://github.com/versada/mis-builder.git
   merges:
     - oca 19.0
-    - versada 19.0-mig-mis_builder
-  target: versada merge-19.0
+  target: oca 19.0
 
 ./reporting-engine:
   remotes:
