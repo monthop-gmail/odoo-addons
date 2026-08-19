@@ -47,13 +47,19 @@ if [ -n "$AGGREGATE_FAILED" ] || [ -n "$UNMERGED" ]; then
     exit 1
 fi
 
-# Build addons path (only include dirs that exist)
+# Build the addons path from whatever gitaggregate actually produced, rather than
+# from a hardcoded list. The old list silently drifted out of sync when
+# ./tier-validation was added to repos.yml: the modules were cloned, but Odoo
+# never saw them, and installing l10n_th_tier_department failed with
+# "depends on module base_tier_validation_formula ... not available in your system".
+# /workspace goes last so this repo's own modules keep the lowest priority.
 ADDONS_PATH="/usr/lib/python3/dist-packages/odoo/addons"
-for dir in /workspace/l10n-thailand /workspace/partner-contact /workspace/server-ux /workspace/mis-builder /workspace/reporting-engine /workspace; do
-    if [ -d "$dir" ]; then
-        ADDONS_PATH="$ADDONS_PATH,$dir"
-    fi
+for dir in /workspace/*/; do
+    [ -d "$dir.git" ] || continue
+    ADDONS_PATH="$ADDONS_PATH,${dir%/}"
 done
+ADDONS_PATH="$ADDONS_PATH,/workspace"
+echo "Addons path: $ADDONS_PATH"
 
 # Create database if not exists
 DB_EXISTS=$(psql -h db -U odoo -tAc "SELECT 1 FROM pg_database WHERE datname='thaiacc'" 2>/dev/null || echo "0")
