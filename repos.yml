@@ -30,10 +30,9 @@
   # Drop a branch once its PR is merged upstream: it becomes an ancestor of
   # oca 19.0, so merging it is a no-op that only slows the aggregate down and
   # makes this list look like more is pending than really is.
-  # l10n_th_base_utils was merged via OCA/l10n-thailand#577.
+  # Merged so far: l10n_th_base_utils (#577), l10n_th_account_tax (#578).
   merges:
     - oca 19.0
-    - monthop 19.0-mig-l10n_th_account_tax
     - monthop 19.0-mig-l10n_th_account_tax_report
     - monthop 19.0-mig-l10n_th_account_wht_cert_form
     - monthop 19.0-mig-l10n_th_mis_report
