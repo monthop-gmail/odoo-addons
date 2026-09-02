@@ -6,7 +6,7 @@ class TestIrSequenceBranchStandard(SingleTransactionCase):
 
     def test_ir_sequence_branch_1_create(self):
         """Create an ir.sequence record with branch legends"""
-        self.env.user.company_id.branch = "00007"
+        self.env.user.company_id.company_registry = "00007"
         seq = self.env["ir.sequence"].create(
             {
                 "code": "test_branch",
@@ -29,7 +29,7 @@ class TestIrSequenceBranchStandard(SingleTransactionCase):
 
     def test_ir_sequence_branch_3_change_branch(self):
         """Change company's branch"""
-        self.env.user.company_id.branch = "00314"
+        self.env.user.company_id.company_registry = "00314"
         for i in range(10, 20):
             value = self.env["ir.sequence"].next_by_code("test_branch")
             self.assertEqual(
