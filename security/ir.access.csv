@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+access_canteen_wallet_user,canteen.wallet.user,canteen.wallet,base.group_user,cru,
+access_canteen_wallet_txn_user,canteen.wallet.txn.user,canteen.wallet.txn,base.group_user,cr,
+access_canteen_adapter_user,canteen.external.wallet.adapter.user,canteen.external.wallet.adapter,base.group_user,cr,
