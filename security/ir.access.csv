@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_village_house_user,village.house.user,village.house,base.group_user,crud,
+access_village_fee_charge_user,village.fee.charge.user,village.fee.charge,base.group_user,cru,
+access_village_issue_user,village.issue.user,village.issue,base.group_user,cru,
+access_village_ai_advisory_user,village.ai.advisory.user,village.ai.advisory,base.group_user,cru,
