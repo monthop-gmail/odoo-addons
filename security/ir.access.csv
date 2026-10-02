@@ -1,0 +1,8 @@
+id,name,model_id,group_id/id,operation,domain
+access_donation_campaign_user,donation.campaign.user,donation.campaign,base.group_user,crud,
+access_donation_entry_user,donation.entry.user,donation.entry,base.group_user,cru,
+access_impact_point_rule_user,impact.point.rule.user,impact.point.rule,base.group_user,cru,
+access_impact_point_wallet_user,impact.point.wallet.user,impact.point.wallet,base.group_user,cru,
+access_impact_point_entry_user,impact.point.entry.user,impact.point.entry,base.group_user,cr,
+access_impact_point_conversion_user,impact.point.conversion.user,impact.point.conversion,base.group_user,cru,
+access_impact_point_adapter_user,impact.point.adapter.user,impact.point.adapter,base.group_user,cr,
