@@ -70,8 +70,11 @@ class VillageFeeCharge(models.Model):
     state = fields.Selection([('outstanding', 'Outstanding'), ('paid', 'Paid')], default='outstanding')
     channel = fields.Selection([
         ('mock_confirm', 'Mock confirmation (DEV/SIMULATED — no real payment)'),
+        ('account_invoice', 'Customer invoice + payment (real accounting path)'),
     ], default='mock_confirm')
     paid_receipt = fields.Char(readonly=True, copy=False, help="Evidence reference issued on (simulated) payment.")
+    invoice_id = fields.Many2one('account.move', readonly=True, copy=False, index=True,
+                                 help="Real customer invoice backing this charge (bounded fee->account.move spike).")
 
     _house_period_uniq = models.Constraint(
         'UNIQUE(house_id, period)',
@@ -82,15 +85,57 @@ class VillageFeeCharge(models.Model):
         'Fee amounts must be positive.',
     )
 
+    def action_issue_invoice(self):
+        """Bounded fee->account.move spike (Village G3 follow-up): issue a REAL
+        posted customer invoice for this charge. No payment gateway — settlement
+        stays simulated. Idempotent guard: one invoice per charge."""
+        for charge in self.filtered(lambda c: c.state == 'outstanding' and not c.invoice_id):
+            comp = self.env.company
+            # Odoo 19+: the chart of accounts is shared — account.account has no company_id
+            income = self.env['account.account'].search(
+                [('account_type', '=', 'income')], limit=1)
+            journal = self.env['account.journal'].search(
+                [('type', '=', 'sale'), ('company_id', '=', comp.id)], limit=1)
+            if not income or not journal:
+                raise ValidationError(self.env._("No income account / sale journal — install a chart first."))
+            invoice = self.env['account.move'].create({
+                'move_type': 'out_invoice',
+                'partner_id': charge.house_id.owner_id.id,
+                'journal_id': journal.id,
+                'invoice_date': fields.Date.context_today(charge),
+                'ref': f'Common fee {charge.house_id.code} {charge.period}',
+                'invoice_line_ids': [(0, 0, {
+                    'name': f"ค่าส่วนกลาง {charge.house_id.code} เดือน {charge.period} (POC)",
+                    'quantity': 1.0, 'price_unit': charge.amount,
+                    'account_id': income.id, 'tax_ids': [(6, 0, [])],
+                })],
+            })
+            invoice.action_post()
+            charge.write({'invoice_id': invoice.id, 'channel': 'account_invoice'})
+
     def action_mark_paid(self):
-        """Simulated payment (DEV/SIMULATED). Production would use account.move + payment."""
+        """Simulated settlement. When a real invoice exists, settle it through the
+        standard account.payment.register flow (real accounting evidence); the
+        'payment' itself is still DEV/SIMULATED — no gateway is called."""
         import hashlib
         for charge in self.filtered(lambda c: c.state == 'outstanding'):
             digest = hashlib.sha256(f"fee|{charge.house_id.code}|{charge.period}".encode()).hexdigest()[:8].upper()
-            charge.write({'state': 'paid', 'paid_receipt': f'FEE-{digest}'})
+            vals = {'state': 'paid', 'paid_receipt': f'FEE-{digest}'}
+            if charge.invoice_id and charge.invoice_id.payment_state != 'paid':
+                comp = self.env.company
+                journal = self.env['account.journal'].search(
+                    [('type', '=', 'bank'), ('company_id', '=', comp.id)], limit=1)
+                wizard = self.env['account.payment.register'].with_context(
+                    active_model='account.move', active_ids=[charge.invoice_id.id],
+                ).create({'journal_id': journal.id} if journal else {})
+                wizard.action_create_payments()
+                charge.invalidate_recordset(['invoice_id'])
+            charge.write(vals)
 
     def write(self, vals):
-        immutable = {'house_id', 'period', 'amount', 'channel'}
+        # Identity fields are immutable; channel/state/receipt track the
+        # settlement path and may transition (outstanding -> invoiced -> paid).
+        immutable = {'house_id', 'period', 'amount'}
         if immutable & set(vals):
             raise ValidationError(self.env._(
                 "Fee charges are append-only (POC): %s cannot change.", ', '.join(sorted(immutable & set(vals)))))

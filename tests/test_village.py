@@ -104,3 +104,46 @@ class TestVillagePoc(TransactionCase):
         self.assertEqual(house.open_issue_count, 1)  # not work_order_done yet
         self.assertEqual(house.work_order_count, 1)
         self.assertEqual(house.fee_outstanding_amount, 800)
+
+
+class TestFeeInvoiceSpike(TransactionCase):
+    """Village follow-up spike: fee charge -> REAL posted customer invoice ->
+    standard payment.register settlement (payment itself still simulated)."""
+
+    def _charge(self, house=None, period='2026-01'):
+        house = house or self.env['village.house'].ensure_demo_setup()['A-101']
+        return self.env['village.fee.charge'].create({
+            'house_id': house.id, 'period': period, 'amount': 800,
+        })
+
+    def test_issue_invoice_posts_real_move(self):
+        house = self.env['village.house'].ensure_demo_setup()['A-101']
+        charge = self._charge(house)
+        charge.action_issue_invoice()
+        self.assertTrue(charge.invoice_id)
+        inv = charge.invoice_id
+        self.assertEqual(inv.move_type, 'out_invoice')
+        self.assertEqual(inv.state, 'posted')
+        self.assertEqual(inv.amount_total, 800.0)
+        self.assertEqual(inv.partner_id.id, house.owner_id.id)
+        self.assertTrue(inv.invoice_line_ids)
+
+    def test_issue_invoice_is_one_per_charge(self):
+        charge = self._charge()
+        charge.action_issue_invoice()
+        charge.action_issue_invoice()  # guarded no-op
+        self.assertEqual(self.env['account.move'].search_count([('ref', 'like', 'Common fee')]), 1)
+
+    def test_payment_register_settles_invoice_and_charge(self):
+        charge = self._charge()
+        charge.action_issue_invoice()
+        charge.action_mark_paid()
+        self.assertEqual(charge.state, 'paid')
+        self.assertTrue(charge.paid_receipt.startswith('FEE-'))
+        self.assertEqual(charge.invoice_id.payment_state, 'paid')
+
+    def test_charge_without_invoice_still_simulated_path(self):
+        charge = self._charge()
+        charge.action_mark_paid()
+        self.assertEqual(charge.state, 'paid')
+        self.assertFalse(charge.invoice_id)
