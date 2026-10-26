@@ -1,0 +1,378 @@
+from datetime import date
+
+from odoo import api, fields, models
+
+from .thai_utils import to_thai_date, to_thai_digits, to_thai_year, num_to_thai_text
+
+
+class FormDocument(models.Model):
+    _name = 'legal.form.document'
+    _description = 'เอกสารแบบฟอร์ม'
+    _inherit = ['mail.thread']
+    _order = 'create_date desc'
+
+    name = fields.Char(
+        string='ชื่อเอกสาร', required=True, tracking=True)
+    template_id = fields.Many2one(
+        'legal.form.template', string='แบบฟอร์ม', required=True)
+    case_id = fields.Many2one(
+        'legal.case', string='คดี', tracking=True)
+
+    state = fields.Selection([
+        ('draft', 'ร่าง'),
+        ('confirmed', 'ยืนยัน'),
+        ('printed', 'พิมพ์แล้ว'),
+    ], string='สถานะ', default='draft', tracking=True)
+
+    # ข้อมูลจากคดี (auto-fill)
+    plaintiff_id = fields.Many2one(
+        'res.partner', string='โจทก์/ผู้ร้อง')
+    defendant_id = fields.Many2one(
+        'res.partner', string='จำเลย/ผู้คัดค้าน')
+    lawyer_id = fields.Many2one(
+        'res.partner', string='ทนายความ')
+    court_name = fields.Char(string='ศาล')
+    black_case_no = fields.Char(string='เลขคดีดำ')
+    red_case_no = fields.Char(string='เลขคดีแดง')
+    document_date = fields.Date(
+        string='วันที่เอกสาร', default=fields.Date.today)
+
+    # ข้อมูลเพิ่มเติมเฉพาะเอกสาร
+    agent_id = fields.Many2one(
+        'res.partner', string='ผู้รับมอบอำนาจ/ผู้รับมอบฉันทะ')
+    guarantor_id = fields.Many2one(
+        'res.partner', string='ผู้ประกัน/ผู้ค้ำประกัน')
+    bail_amount = fields.Float(string='วงเงินประกัน')
+    written_location = fields.Char(string='สถานที่เขียน')
+
+    # ตัวเลือกการพิมพ์
+    print_mode = fields.Selection([
+        ('full', 'พิมพ์ทั้งฟอร์ม'),
+        ('data_only', 'พิมพ์เฉพาะข้อมูล'),
+    ], string='โหมดพิมพ์', default='full',
+        help='พิมพ์เฉพาะข้อมูล: สำหรับพิมพ์ลงกระดาษฟอร์มสำเร็จรูป '
+             '(เช่น ลูกความเซ็นชื่อไว้แล้ว)')
+    duplex_mode = fields.Selection([
+        ('all', 'ทุกหน้า'),
+        ('odd', 'เฉพาะหน้าคี่ (ด้านหน้า)'),
+        ('even', 'เฉพาะหน้าคู่ (ด้านหลัง)'),
+    ], string='เลือกหน้าพิมพ์', default='all',
+        help='สำหรับฟอร์มที่พิมพ์หน้า-หลัง: '
+             'พิมพ์หน้าคี่ก่อน กลับกระดาษ แล้วพิมพ์หน้าคู่')
+    printer_config_id = fields.Many2one(
+        'legal.printer.config', string='เครื่องพิมพ์',
+        help='เลือกเครื่องพิมพ์เพื่อปรับ offset ตำแหน่ง')
+
+    # เนื้อหาที่กรอก
+    body_html = fields.Html(string='เนื้อหาเอกสาร', sanitize=False)
+    notes = fields.Text(string='หมายเหตุ')
+
+    # ข้อความต่อเนื่อง (40 ก.)
+    has_continuous_text = fields.Boolean(
+        related='template_id.has_continuous_text')
+    continuous_text_ids = fields.One2many(
+        'legal.continuous.text', 'document_id',
+        string='เนื้อความต่อเนื่อง (40 ก.)')
+    continuous_text_preview = fields.Html(
+        string='ดูตัวอย่างข้อความต่อเนื่อง',
+        compute='_compute_continuous_text_preview')
+
+    # บัญชีพยาน
+    has_witness_list = fields.Boolean(
+        related='template_id.has_witness_list')
+    witness_item_ids = fields.One2many(
+        'legal.witness.item', 'document_id',
+        string='บัญชีพยาน')
+    witness_count = fields.Integer(
+        string='จำนวนพยาน', compute='_compute_witness_count')
+
+    # ข้อความแทรกอิสระ
+    annotation_ids = fields.One2many(
+        'legal.text.annotation', 'document_id',
+        string='ข้อความแทรก')
+    annotation_count = fields.Integer(
+        string='จำนวนข้อความแทรก',
+        compute='_compute_annotation_count')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Auto-fill case data + template body on create"""
+        for vals in vals_list:
+            # Fill from case
+            if vals.get('case_id') and not vals.get('plaintiff_id'):
+                case = self.env['legal.case'].browse(vals['case_id'])
+                vals.setdefault('plaintiff_id', case.plaintiff_id.id)
+                vals.setdefault('defendant_id', case.defendant_id.id)
+                vals.setdefault('lawyer_id', case.lawyer_id.id)
+                vals.setdefault('court_name', case.court_name)
+                vals.setdefault('black_case_no', case.black_case_no)
+                vals.setdefault('red_case_no', case.red_case_no)
+            # Fill body from template
+            if vals.get('template_id') and not vals.get('body_html'):
+                tmpl = self.env['legal.form.template'].browse(vals['template_id'])
+                vals['body_html'] = tmpl.body_html
+        records = super().create(vals_list)
+        # Apply mail merge on body_html
+        for rec in records:
+            if rec.body_html and rec.case_id:
+                rec.body_html = rec._apply_merge_fields(rec.body_html)
+        return records
+
+    def write(self, vals):
+        """Re-apply merge fields when case changes"""
+        res = super().write(vals)
+        if 'case_id' in vals:
+            for rec in self:
+                if rec.case_id:
+                    rec.plaintiff_id = rec.case_id.plaintiff_id
+                    rec.defendant_id = rec.case_id.defendant_id
+                    rec.lawyer_id = rec.case_id.lawyer_id
+                    rec.court_name = rec.case_id.court_name
+                    rec.black_case_no = rec.case_id.black_case_no
+                    rec.red_case_no = rec.case_id.red_case_no
+                    if rec.body_html:
+                        rec.body_html = rec._apply_merge_fields(rec.body_html)
+        return res
+
+    def _apply_merge_fields(self, html):
+        """Replace merge placeholders in body_html with actual data.
+
+        Supported placeholders — see PLACEHOLDER_REFERENCE.md for full list.
+        """
+        if not html:
+            return html
+        doc_date = self.document_date or date.today()
+        p = self.plaintiff_id
+        d = self.defendant_id
+        l = self.lawyer_id
+        case = self.case_id
+
+        replacements = {
+            # --- คู่ความ ---
+            '%(plaintiff)s': p.name or '',
+            '%(defendant)s': d.name or '',
+            '%(lawyer)s': l.name or '',
+            # --- ข้อมูลบุคคล: โจทก์ ---
+            '%(plaintiff_address)s': self._format_address(p),
+            '%(plaintiff_phone)s': p.phone or '',
+            '%(plaintiff_id_no)s': p.vat or '',
+            '%(plaintiff_email)s': p.email or '',
+            '%(plaintiff_race)s': p.race or '',
+            '%(plaintiff_nationality)s': p.nationality or '',
+            '%(plaintiff_occupation)s': p.occupation or '',
+            '%(plaintiff_age)s': self._compute_age(p.birthdate) if p.birthdate else '',
+            '%(plaintiff_birthdate)s': to_thai_date(p.birthdate, 'long') if p.birthdate else '',
+            # --- ข้อมูลบุคคล: จำเลย ---
+            '%(defendant_address)s': self._format_address(d),
+            '%(defendant_phone)s': d.phone or '',
+            '%(defendant_id_no)s': d.vat or '',
+            '%(defendant_email)s': d.email or '',
+            '%(defendant_race)s': d.race or '',
+            '%(defendant_nationality)s': d.nationality or '',
+            '%(defendant_occupation)s': d.occupation or '',
+            '%(defendant_age)s': self._compute_age(d.birthdate) if d.birthdate else '',
+            '%(defendant_birthdate)s': to_thai_date(d.birthdate, 'long') if d.birthdate else '',
+            # --- ข้อมูลบุคคล: ทนายความ ---
+            '%(lawyer_address)s': self._format_address(l),
+            '%(lawyer_phone)s': l.phone or '',
+            '%(lawyer_email)s': l.email or '',
+            '%(lawyer_license_no)s': l.lawyer_license_no or '',
+            # --- ศาล / เลขคดี ---
+            '%(court)s': self.court_name or '',
+            '%(black_case)s': self.black_case_no or '',
+            '%(red_case)s': self.red_case_no or '',
+            '%(black_case_thai)s': to_thai_digits(self.black_case_no or ''),
+            '%(red_case_thai)s': to_thai_digits(self.red_case_no or ''),
+            # --- ข้อมูลคดี ---
+            '%(case_category)s': (case.case_category or '') if case else '',
+            '%(charge)s': (case.charge or '') if case else '',
+            '%(claim_amount)s': '{:,.2f}'.format(case.claim_amount) if case and case.claim_amount else '',
+            '%(claim_amount_text)s': num_to_thai_text(case.claim_amount) if case and case.claim_amount else '',
+            '%(judgment_date)s': to_thai_date(case.judgment_date, 'long') if case and case.judgment_date else '',
+            '%(judgment_read_date)s': to_thai_date(case.judgment_read_date, 'long') if case and case.judgment_read_date else '',
+            # --- ข้อมูลบุคคล: ทนาย (เพิ่มเติม) ---
+            '%(lawyer_id_no)s': l.vat or '',
+            '%(lawyer_fax)s': l.fax or '',
+            '%(lawyer_race)s': l.race or '',
+            '%(lawyer_nationality)s': l.nationality or '',
+            '%(lawyer_occupation)s': l.occupation or '',
+            '%(lawyer_age)s': self._compute_age(l.birthdate) if l.birthdate else '',
+            # --- ข้อมูลบุคคล: โจทก์/จำเลย (เพิ่มเติม) ---
+            '%(plaintiff_fax)s': p.fax or '',
+            '%(defendant_fax)s': d.fax or '',
+            # --- เลขบัตรประชาชน format X-XXXX-XXXXX-XX-X ---
+            '%(plaintiff_id_formatted)s': self._format_thai_id(p.vat),
+            '%(defendant_id_formatted)s': self._format_thai_id(d.vat),
+            '%(lawyer_id_formatted)s': self._format_thai_id(l.vat),
+            '%(agent_id_formatted)s': self._format_thai_id(self.agent_id.vat),
+            '%(guarantor_id_formatted)s': self._format_thai_id(self.guarantor_id.vat),
+            # --- ที่อยู่แยก field ---
+            '%(plaintiff_street)s': p.street or '',
+            '%(plaintiff_street2)s': p.street2 or '',
+            '%(plaintiff_city)s': p.city or '',
+            '%(plaintiff_state)s': p.state_id.name if p.state_id else '',
+            '%(plaintiff_zip)s': p.zip or '',
+            '%(defendant_street)s': d.street or '',
+            '%(defendant_street2)s': d.street2 or '',
+            '%(defendant_city)s': d.city or '',
+            '%(defendant_state)s': d.state_id.name if d.state_id else '',
+            '%(defendant_zip)s': d.zip or '',
+            '%(lawyer_street)s': l.street or '',
+            '%(lawyer_street2)s': l.street2 or '',
+            '%(lawyer_city)s': l.city or '',
+            '%(lawyer_state)s': l.state_id.name if l.state_id else '',
+            '%(lawyer_zip)s': l.zip or '',
+            # --- คู่ความหลายคน (join ชื่อด้วย ", ") ---
+            '%(plaintiffs)s': self._join_party_names(case.plaintiff_ids) if case else '',
+            '%(defendants)s': self._join_party_names(case.defendant_ids) if case else '',
+            '%(plaintiffs_full)s': self._join_party_details(case.plaintiff_ids) if case else '',
+            '%(defendants_full)s': self._join_party_details(case.defendant_ids) if case else '',
+            # --- ข้อมูลเฉพาะเอกสาร ---
+            '%(agent)s': self.agent_id.name or '',
+            '%(agent_address)s': self._format_address(self.agent_id),
+            '%(agent_phone)s': self.agent_id.phone or '',
+            '%(agent_id_no)s': self.agent_id.vat or '',
+            '%(agent_email)s': self.agent_id.email or '',
+            '%(agent_fax)s': self.agent_id.fax or '',
+            '%(agent_age)s': self._compute_age(self.agent_id.birthdate) if self.agent_id.birthdate else '',
+            '%(guarantor)s': self.guarantor_id.name or '',
+            '%(guarantor_address)s': self._format_address(self.guarantor_id),
+            '%(guarantor_id_no)s': self.guarantor_id.vat or '',
+            '%(bail_amount)s': '{:,.2f}'.format(self.bail_amount) if self.bail_amount else '',
+            '%(bail_amount_text)s': num_to_thai_text(self.bail_amount) if self.bail_amount else '',
+            '%(written_location)s': self.written_location or '',
+            # --- วันที่ (พุทธศักราช + ตัวเลขไทย) ---
+            '%(date_long)s': to_thai_date(doc_date, 'long'),
+            '%(date_short)s': to_thai_date(doc_date, 'short'),
+            '%(date_full)s': to_thai_date(doc_date, 'full'),
+            '%(thai_year)s': to_thai_year(doc_date),
+        }
+        for key, value in replacements.items():
+            html = html.replace(key, str(value))
+        return html
+
+    def _format_thai_id(self, id_no):
+        """Format Thai national ID: 1234567890123 → 1-2345-67890-12-3"""
+        if not id_no:
+            return ''
+        digits = ''.join(c for c in id_no if c.isdigit())
+        if len(digits) != 13:
+            return id_no  # return as-is if not 13 digits
+        return f'{digits[0]}-{digits[1:5]}-{digits[5:10]}-{digits[10:12]}-{digits[12]}'
+
+    def _compute_age(self, birthdate):
+        """คำนวณอายุจากวันเกิด"""
+        if not birthdate:
+            return ''
+        today = date.today()
+        age = today.year - birthdate.year
+        if (today.month, today.day) < (birthdate.month, birthdate.day):
+            age -= 1
+        return to_thai_digits(str(age))
+
+    def _join_party_names(self, partners):
+        """Join partner names: 'นาย ก, นาย ข และนาย ค'"""
+        if not partners:
+            return ''
+        names = [p.name for p in partners if p.name]
+        if len(names) <= 1:
+            return names[0] if names else ''
+        return ', '.join(names[:-1]) + ' และ' + names[-1]
+
+    def _join_party_details(self, partners):
+        """Join partner names with addresses for multi-party forms."""
+        if not partners:
+            return ''
+        parts = []
+        for i, p in enumerate(partners, 1):
+            detail = p.name or ''
+            addr = self._format_address(p)
+            if addr:
+                detail += f' {addr}'
+            parts.append(f'{to_thai_digits(str(i))}. {detail}')
+        return '\n'.join(parts)
+
+    def _format_address(self, partner):
+        """Format partner address as single line"""
+        if not partner:
+            return ''
+        parts = [
+            partner.street or '',
+            partner.street2 or '',
+            partner.city or '',
+            partner.state_id.name if partner.state_id else '',
+            partner.zip or '',
+        ]
+        return ' '.join(p for p in parts if p)
+
+    @api.onchange('case_id')
+    def _onchange_case_id(self):
+        """ดึงข้อมูลจากคดีมาเติมอัตโนมัติ (UI)"""
+        if self.case_id:
+            self.plaintiff_id = self.case_id.plaintiff_id
+            self.defendant_id = self.case_id.defendant_id
+            self.lawyer_id = self.case_id.lawyer_id
+            self.court_name = self.case_id.court_name
+            self.black_case_no = self.case_id.black_case_no
+            self.red_case_no = self.case_id.red_case_no
+            if self.body_html:
+                self.body_html = self._apply_merge_fields(self.body_html)
+
+    @api.depends('witness_item_ids')
+    def _compute_witness_count(self):
+        for rec in self:
+            rec.witness_count = len(rec.witness_item_ids)
+
+    @api.depends('annotation_ids')
+    def _compute_annotation_count(self):
+        for rec in self:
+            rec.annotation_count = len(rec.annotation_ids)
+
+    @api.depends('continuous_text_ids', 'continuous_text_ids.content',
+                 'continuous_text_ids.section_label',
+                 'continuous_text_ids.section_number')
+    def _compute_continuous_text_preview(self):
+        for rec in self:
+            if not rec.continuous_text_ids:
+                rec.continuous_text_preview = False
+                continue
+            parts = []
+            for ct in rec.continuous_text_ids:
+                label = ct.section_label or 'ข้อ'
+                number = ct.section_number or ''
+                header = f"<strong>{label} {number}</strong>"
+                content = ct.content or ''
+                parts.append(f"<p>{header} {content}</p>")
+            rec.continuous_text_preview = ''.join(parts)
+
+    @api.onchange('template_id')
+    def _onchange_template_id(self):
+        """ดึง template มาเป็นเนื้อหาเริ่มต้น"""
+        if self.template_id and self.template_id.body_html:
+            self.body_html = self.template_id.body_html
+
+    def action_confirm(self):
+        self.write({'state': 'confirmed'})
+
+    def action_print(self):
+        self.write({'state': 'printed'})
+        if self.template_id.report_template_id:
+            return self.template_id.report_template_id.report_action(self, config=False)
+        if self.print_mode == 'data_only':
+            return self.env.ref(
+                'legal_forms.action_report_form_data_only'
+            ).report_action(self, config=False)
+        if self.duplex_mode == 'odd':
+            return self.env.ref(
+                'legal_forms.action_report_form_odd_pages'
+            ).report_action(self, config=False)
+        if self.duplex_mode == 'even':
+            return self.env.ref(
+                'legal_forms.action_report_form_even_pages'
+            ).report_action(self, config=False)
+        return self.env.ref(
+            'legal_forms.action_report_form_document'
+        ).report_action(self, config=False)
+
+    def action_draft(self):
+        self.write({'state': 'draft'})
