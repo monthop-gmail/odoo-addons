@@ -12,7 +12,7 @@ Odoo addons สาธารณะ (public) ของ monthop-gmail
 
 | โมดูล | เวอร์ชัน | ที่มา |
 |---|---|---|
-| legal_forms | 19.0 | มาจาก lawform-odoo · บน 20.0 ตั้ง `installable: False` รอ migrate |
+| legal_forms | 20.0 | มาจาก lawform-odoo |
 | village_poc | 20.0 | มาจาก village-odoo-poc |
 | donation_poc | 20.0 | มาจาก donation-odoo-poc |
 | canteen_poc | 20.0 | มาจาก canteen-odoo-poc |

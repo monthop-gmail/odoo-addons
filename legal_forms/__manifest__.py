@@ -1,6 +1,6 @@
 {
     'name': 'Legal Forms (แบบฟอร์มศาล)',
-    'version': '19.0.1.3.0',
+    'version': '20.0.1.3.0',
     'category': 'Services/Legal',
     'summary': 'แบบฟอร์มศาลและเอกสารทางกฎหมาย',
     'description': """
@@ -14,7 +14,7 @@
     'license': 'LGPL-3',
     'depends': ['base', 'contacts', 'mail'],
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/form_category_data.xml',
         'data/form_template_data.xml',
         'views/res_partner_views.xml',
@@ -25,7 +25,6 @@
         'reports/report_form_document.xml',
         'views/menu.xml',
     ],
-    'installable': False,  # not yet migrated to 20.0
     'application': True,
     'auto_install': False,
     'post_init_hook': 'post_init_hook',
