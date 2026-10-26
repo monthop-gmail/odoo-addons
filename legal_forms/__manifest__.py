@@ -10,8 +10,7 @@
         - พิมพ์แบบฟอร์มเป็น PDF
         - เก็บประวัติเอกสารทั้งหมด
     """,
-    'author': 'Your Company',
-    'website': '',
+    'author': 'monthop-gmail',
     'license': 'LGPL-3',
     'depends': ['base', 'contacts', 'mail'],
     'data': [
