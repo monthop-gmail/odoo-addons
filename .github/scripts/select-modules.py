@@ -11,12 +11,22 @@ Usage:
 Only addons dirs under --host-root are scanned (Odoo core addons are skipped).
 Writes ready / pending / pending_installable / addons_path to $GITHUB_OUTPUT
 (addons_path is mapped from --host-root to --container-root) and, with
---summary, markdown tables to $GITHUB_STEP_SUMMARY.
+--summary, markdown tables to $GITHUB_STEP_SUMMARY. Under GitHub Actions,
+problems are also emitted as ::error / ::warning annotations.
 """
 import argparse
 import ast
 import os
 import sys
+
+
+def annotate(level, title, msg):
+    """GitHub annotation (::error / ::warning), escaped and kept on one line."""
+    if not os.environ.get("GITHUB_ACTIONS"):
+        return
+    msg = " ".join(str(msg).split())[:900].replace("%", "%25")
+    title = title[:80].replace("%", "%25").replace(":", "%3A").replace(",", "%2C")
+    print(f"::{level} title={title}::{msg}")
 
 
 def read_manifest(path):
@@ -35,6 +45,7 @@ def scan(dirs, series):
                 data = read_manifest(manifest)
             except Exception as e:  # noqa: BLE001
                 pending.append((name, "?", False, f"manifest unreadable: {e}"))
+                annotate("warning", f"{name} manifest unreadable", f"{name}/__manifest__.py: {e}")
                 continue
             version = str(data.get("version", ""))
             installable = data.get("installable", True) is not False
@@ -67,7 +78,9 @@ def main():
         if real == host_root or real.startswith(host_root + os.sep):
             dirs.append(real)
     if not dirs:
-        sys.exit(f"no addons dir under {host_root} in {args.addons_path!r}")
+        msg = f"no addons dir under {host_root} in {args.addons_path!r}"
+        annotate("error", "select-modules", msg)
+        sys.exit(msg)
 
     ready, pending = scan(dirs, args.series)
     container_dirs = [args.container_root + d[len(host_root):] for d in dirs]
