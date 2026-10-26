@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_canteen_wallet_tree" model="ir.ui.view">
+        <field name="name">canteen.wallet.tree</field>
+        <field name="model">canteen.wallet</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="balance"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_canteen_wallet_form" model="ir.ui.view">
+        <field name="name">canteen.wallet.form</field>
+        <field name="model">canteen.wallet</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id"/>
+                        <field name="currency_id"/>
+                        <field name="balance"/>
+                    </group>
+                    <notebook>
+                        <page string="Ledger (append-only)">
+                            <field name="txn_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_canteen_wallet_txn_tree" model="ir.ui.view">
+        <field name="name">canteen.wallet.txn.tree</field>
+        <field name="model">canteen.wallet.txn</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="wallet_id"/>
+                <field name="kind"/>
+                <field name="channel"/>
+                <field name="amount"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="ref"/>
+                <field name="external_ref"/>
+                <field name="pos_payment_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_canteen_wallet" model="ir.actions.act_window">
+        <field name="name">Prepaid Wallets</field>
+        <field name="res_model">canteen.wallet</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_canteen_wallet_txn" model="ir.actions.act_window">
+        <field name="name">Wallet Ledger</field>
+        <field name="res_model">canteen.wallet.txn</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <menuitem id="menu_canteen_poc_root" name="Canteen POC" sequence="90"/>
+    <menuitem id="menu_canteen_wallet" name="Prepaid Wallets" parent="menu_canteen_poc_root" action="action_canteen_wallet"/>
+    <menuitem id="menu_canteen_wallet_txn" name="Wallet Ledger" parent="menu_canteen_poc_root" action="action_canteen_wallet_txn"/>
+</odoo>
