@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Document Form View -->
+    <record id="view_form_document_form" model="ir.ui.view">
+        <field name="name">legal.form.document.form</field>
+        <field name="model">legal.form.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_apply_merge_fields"
+                            string="เติมข้อมูลลงฟอร์ม"
+                            type="object" class="btn-secondary"
+                            invisible="state != 'draft'"
+                            help="อ่าน template ใหม่ แล้วเติมข้อมูลจาก fields ด้านบน (กดซ้ำได้)"/>
+                    <button name="action_confirm" string="ยืนยัน"
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_print" string="พิมพ์"
+                            type="object" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_draft" string="กลับเป็นร่าง"
+                            type="object"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="ข้อมูลเอกสาร">
+                            <field name="name"/>
+                            <field name="template_id"/>
+                            <field name="case_id"/>
+                        </group>
+                        <group string="ข้อมูลคดี">
+                            <field name="court_name"/>
+                            <field name="black_case_no"/>
+                            <field name="red_case_no"/>
+                            <field name="print_mode" widget="radio"/>
+                            <field name="duplex_mode"
+                                   widget="radio"/>
+                            <field name="printer_config_id"
+                                   invisible="print_mode != 'data_only'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="คู่ความ">
+                            <field name="plaintiff_id"/>
+                            <field name="defendant_id"/>
+                            <field name="lawyer_id"/>
+                        </group>
+                        <group string="ข้อมูลเพิ่มเติม">
+                            <field name="document_date"/>
+                            <field name="written_location"/>
+                            <field name="agent_id"/>
+                            <field name="guarantor_id"/>
+                            <field name="bail_amount"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="เนื้อหา">
+                            <field name="body_html"/>
+                        </page>
+                        <page string="ข้อความต่อเนื่อง (40 ก.)"
+                              invisible="not has_continuous_text">
+                            <field name="has_continuous_text" invisible="1"/>
+                            <div class="alert alert-info" role="alert">
+                                พิมพ์เนื้อความแต่ละข้อ โปรแกรมจะตัดลงฟอร์ม 40 ก. ต่อท้ายให้อัตโนมัติ
+                            </div>
+                            <field name="continuous_text_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="section_label"/>
+                                    <field name="section_number"/>
+                                    <field name="content"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="ดูตัวอย่าง 40 ก."
+                              invisible="not has_continuous_text">
+                            <field name="continuous_text_preview"
+                                   readonly="1" class="o_field_html"/>
+                        </page>
+                        <page string="บัญชีพยาน"
+                              invisible="not has_witness_list">
+                            <field name="has_witness_list" invisible="1"/>
+                            <div class="alert alert-info" role="alert">
+                                เพิ่ม/ลบ/ลากเรียงลำดับพยาน ระบบจะจัดหน้าให้อัตโนมัติ
+                            </div>
+                            <field name="witness_item_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="witness_number" readonly="1"/>
+                                    <field name="name"/>
+                                    <field name="address"/>
+                                    <field name="witness_type"/>
+                                    <field name="facts_to_prove"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="ข้อความแทรก">
+                            <div class="alert alert-info" role="alert">
+                                เพิ่มข้อความลงตำแหน่งใดก็ได้บนฟอร์ม เช่น ขีดฆ่าแก้ไข หรือเซ็นชื่อรับรอง
+                            </div>
+                            <field name="annotation_ids">
+                                <list editable="bottom">
+                                    <field name="page_number"/>
+                                    <field name="annotation_type"/>
+                                    <field name="content"/>
+                                    <field name="pos_x"/>
+                                    <field name="pos_y"/>
+                                    <field name="font_size"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="ตรวจ Placeholder">
+                            <div class="alert alert-info" role="alert">
+                                ตรวจสอบค่าที่จะถูกเติมลงฟอร์ม — แก้ไขข้อมูลด้านบน แล้วกด "เติมข้อมูลลงฟอร์ม"
+                            </div>
+                            <field name="placeholder_preview" readonly="1"/>
+                        </page>
+                        <page string="หมายเหตุ">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Document List View -->
+    <record id="view_form_document_list" model="ir.ui.view">
+        <field name="name">legal.form.document.list</field>
+        <field name="model">legal.form.document</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="template_id"/>
+                <field name="case_id"/>
+                <field name="plaintiff_id"/>
+                <field name="defendant_id"/>
+                <field name="state"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Document Search -->
+    <record id="view_form_document_search" model="ir.ui.view">
+        <field name="name">legal.form.document.search</field>
+        <field name="model">legal.form.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="case_id"/>
+                <field name="template_id"/>
+                <field name="plaintiff_id"/>
+                <filter string="ร่าง" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="ยืนยัน" name="confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <group>
+                    <filter string="คดี" name="group_case"
+                            domain="[]" context="{'group_by': 'case_id'}"/>
+                    <filter string="แบบฟอร์ม" name="group_template"
+                            domain="[]" context="{'group_by': 'template_id'}"/>
+                    <filter string="สถานะ" name="group_state"
+                            domain="[]" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_form_document" model="ir.actions.act_window">
+        <field name="name">เอกสาร</field>
+        <field name="res_model">legal.form.document</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
