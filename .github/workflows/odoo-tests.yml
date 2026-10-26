@@ -71,7 +71,15 @@ jobs:
           ADDONS_PATH: ${{ steps.select.outputs.addons_path }}
           NETWORK: ${{ job.services.postgres.network }}
           PG_ID: ${{ job.services.postgres.id }}
+          TS: '^[0-9-]+ [0-9:,]+ [0-9]+ '
         run: |
+          # ::error with workflow-command escaping, message kept on one line
+          annotate() {
+            local t="${1:0:80}" m="${2//$'\r'/}"
+            m="${m//$'\n'/ }"; m="${m:0:900}"
+            t="${t//%/%25}"; t="${t//:/%3A}"; t="${t//,/%2C}"; m="${m//%/%25}"
+            echo "::error title=$t::$m"
+          }
           mkdir -p logs
           tags="$(echo "$READY" | sed 's#^#/#; s#,#,/#g')"
           set +e
@@ -85,18 +93,27 @@ jobs:
           set -e
           problems=()
           [ "$rc" -eq 0 ] || problems+=("odoo exit code $rc")
+          errcount="$(awk -v ts="$TS" '$0 ~ ts && / (ERROR|CRITICAL) / && !/ odoo\.sql_db: bad query/' logs/test.log | wc -l)"
           # "odoo.sql_db: bad query" is logged when a test deliberately hits a DB
           # constraint (e.g. assertRaises(IntegrityError)); a real one still shows
           # up as a test error / install failure, so it is not a problem by itself.
-          grep -E ' (ERROR|CRITICAL) ' logs/test.log | grep -vqE ' odoo\.sql_db: bad query' && problems+=("ERROR/CRITICAL in log")
+          [ "$errcount" -eq 0 ] || problems+=("$errcount ERROR/CRITICAL line(s) in log")
           grep -q 'Some modules are not loaded' logs/test.log && problems+=("Some modules are not loaded")
           result="$(grep -E '[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests' logs/test.log | tail -1 | sed -E 's/.*(\b[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests).*/\1/')"
           if [ -n "$result" ] && ! echo "$result" | grep -qE '^0 failed, 0 error'; then
             problems+=("tests: $result")
           fi
+          not_installed=()
           for m in ${READY//,/ }; do
             state="$(docker exec "$PG_ID" psql -U odoo -d ci -tAc "select state from ir_module_module where name='$m'" 2>/dev/null)"
-            [ "$state" = installed ] || problems+=("$m state=${state:-missing}")
+            [ "$state" = installed ] || not_installed+=("$m state=${state:-missing}")
+          done
+          # one entry for all modules so the annotations stay under the
+          # 10-errors-per-step limit
+          [ ${#not_installed[@]} -eq 0 ] || problems+=("$(IFS=,; echo "${not_installed[*]}" | sed 's/,/, /g')")
+          # annotations: readable via the check-runs API and the mobile app
+          for p in "${problems[@]}"; do
+            annotate "$p" "$p (Odoo $SERIES, modules: $READY)"
           done
           {
             echo "### Test result on \`$IMAGE\`"
@@ -110,7 +127,7 @@ jobs:
               echo
               # error lines with their tracebacks; pad with the log tail so the
               # summary always shows at least 20 real log lines
-              awk -v ts='^[0-9-]+ [0-9:,]+ [0-9]+ ' '
+              awk -v ts="$TS" '
                 $0 ~ ts { p = ($0 ~ / (ERROR|CRITICAL) |Some modules are not loaded/) && $0 !~ / odoo\.sql_db: bad query/ }
                 p' logs/test.log | cut -c1-300 | head -100 > logs/errors.txt
               echo '```'
@@ -123,6 +140,42 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
           [ ${#problems[@]} -eq 0 ]
+
+      # separate step: GitHub keeps at most 10 error annotations per step
+      - name: Annotate tracebacks
+        if: failure() && steps.select.outputs.ready != '' && hashFiles('logs/test.log') != ''
+        env:
+          TS: '^[0-9-]+ [0-9:,]+ [0-9]+ '
+        run: |
+          # one annotation per ERROR/CRITICAL line (max 10): the line itself,
+          # the deepest repo file:line of its traceback and the exception
+          awk -v ts="$TS" '
+            function flush() {
+              if (head == "") return
+              msg = head; if (loc != "") msg = msg " | " loc; if (exc != "") msg = msg " | " exc
+              print title "\t" msg; n++; head = ""
+            }
+            $0 ~ ts {
+              flush()
+              if (n >= 10) exit
+              if ($0 ~ / (ERROR|CRITICAL) / && $0 !~ / odoo\.sql_db: bad query/) {
+                line = $0; sub(ts, "", line)
+                split(line, f, " "); title = f[1] " " f[3]; sub(/:$/, "", title)
+                head = line; loc = ""; exc = ""
+              }
+              next
+            }
+            head != "" && match($0, /^ *File "\/workspace\/[^"]+", line [0-9]+/) {
+              loc = substr($0, RSTART, RLENGTH); sub(/^ *File "\/workspace\//, "", loc); sub(/", line /, ":", loc)
+              next
+            }
+            head != "" && /^[A-Za-z_][A-Za-z0-9_.]*(: |$)/ { exc = $0 }
+            END { if (n < 10) flush() }
+          ' logs/test.log | while IFS=$'\t' read -r t m; do
+            t="${t:0:80}"; m="${m:0:900}"
+            t="${t//%/%25}"; t="${t//:/%3A}"; t="${t//,/%2C}"; m="${m//%/%25}"
+            echo "::error title=$t::$m"
+          done
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.select.outputs.ready != ''
@@ -208,6 +261,9 @@ jobs:
             err="$(echo "$err" | sed -E 's/^[0-9-]+ [0-9:,]+ [0-9]+ //' | cut -c1-200 | sed 's/|/\\|/g; s/`/'"'"'/g')"
             echo "| \`$m\` | $result | ${err:-} |" >> "$GITHUB_STEP_SUMMARY"
             echo "$m: $result ${err:-}"
+            case "$result" in
+              ❌*) w="$m: $result ${err:-}"; w="${w:0:900}"; echo "::warning title=pending install ${m}::${w//%/%25}" ;;
+            esac
           done
 
       - uses: actions/upload-artifact@v4
