@@ -85,7 +85,10 @@ jobs:
           set -e
           problems=()
           [ "$rc" -eq 0 ] || problems+=("odoo exit code $rc")
-          grep -qE ' (ERROR|CRITICAL) ' logs/test.log && problems+=("ERROR/CRITICAL in log")
+          # "odoo.sql_db: bad query" is logged when a test deliberately hits a DB
+          # constraint (e.g. assertRaises(IntegrityError)); a real one still shows
+          # up as a test error / install failure, so it is not a problem by itself.
+          grep -E ' (ERROR|CRITICAL) ' logs/test.log | grep -vqE ' odoo\.sql_db: bad query' && problems+=("ERROR/CRITICAL in log")
           grep -q 'Some modules are not loaded' logs/test.log && problems+=("Some modules are not loaded")
           result="$(grep -E '[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests' logs/test.log | tail -1 | sed -E 's/.*(\b[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests).*/\1/')"
           if [ -n "$result" ] && ! echo "$result" | grep -qE '^0 failed, 0 error'; then
@@ -105,8 +108,17 @@ jobs:
             else
               echo "- **FAIL**: $(IFS='; '; echo "${problems[*]}")"
               echo
+              # error lines with their tracebacks; pad with the log tail so the
+              # summary always shows at least 20 real log lines
+              awk -v ts='^[0-9-]+ [0-9:,]+ [0-9]+ ' '
+                $0 ~ ts { p = ($0 ~ / (ERROR|CRITICAL) |Some modules are not loaded/) && $0 !~ / odoo\.sql_db: bad query/ }
+                p' logs/test.log | cut -c1-300 | head -100 > logs/errors.txt
               echo '```'
-              grep -E ' (ERROR|CRITICAL) |FAIL:|Some modules are not loaded' logs/test.log | head -20
+              cat logs/errors.txt
+              if [ "$(wc -l < logs/errors.txt)" -lt 20 ]; then
+                echo "--- last 30 lines of the log ---"
+                tail -n 30 logs/test.log | cut -c1-300
+              fi
               echo '```'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
