@@ -4,6 +4,11 @@ from odoo.exceptions import ValidationError, UserError
 
 class TestCanteenWallet(TransactionCase):
 
+    def setUp(self):
+        super().setUp()
+        # Obvious test-only PromptPay number (10 digits as l10n_th requires); never a real account.
+        self.env['ir.config_parameter'].sudo().set_param('canteen_poc.promptpay_mobile', '0000000000')
+
     def _wallet(self):
         partner = self.env['res.partner'].create({'name': 'Employee POC'})
         return self.env['canteen.wallet'].create({'name': 'Employee POC wallet', 'partner_id': partner.id})

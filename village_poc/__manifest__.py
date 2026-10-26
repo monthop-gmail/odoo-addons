@@ -4,7 +4,7 @@
     'category': 'Services',
     'summary': 'Fast POC: village juristic person — houses, common fees, Thai issues, AI advisory (human-approved) work orders',
     'description': """
-Fast POC (task-9f7a7314, discussion dis-96d41357) — minimal Thai housing-estate vertical slice on stock Odoo 20:
+Fast POC — minimal Thai housing-estate vertical slice on stock Odoo 20:
 - house/unit + owner + optional resident (synthetic data only)
 - common-fee charges with outstanding/paid state (simulated payment, labeled)
 - resident Thai-language service request ("ไฟถนนหน้าบ้านดับ")

@@ -4,7 +4,7 @@
     'category': 'Point of Sale',
     'summary': 'Fast POC: cashless canteen — PromptPay QR, prepaid wallet, mock external-wallet adapter',
     'description': """
-Fast POC (task-43c99f5c, discussion dis-882f5ddd) — minimal cashless canteen vertical slice on stock Odoo 20:
+Fast POC — minimal cashless canteen vertical slice on stock Odoo 20:
 - PromptPay QR top-up via the official l10n_th EMV QR path (no OCA addon, no QR engine reimplementation)
 - Prepaid wallet: top-up -> debit -> balance on an append-only ledger
 - External wallet adapter path as a clearly labeled MOCK/deterministic adapter (no real provider claimed)

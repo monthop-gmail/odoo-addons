@@ -4,7 +4,7 @@
     'category': 'Nonprofit',
     'summary': 'Fast POC: donation ledger separate from impact-point ledger, mock conversion adapter',
     'description': """
-Fast POC (task-19f39030, discussion dis-4c1d95c7) — minimal nationwide donation network vertical slice on stock Odoo 20:
+Fast POC — minimal nationwide donation network vertical slice on stock Odoo 20:
 - donor -> campaign/recipient registry (province/category) -> simulated monetary donation -> receipt reference -> point issuance
 - donation (money) ledger and impact-point ledger are SEPARATE models; points carry no monetary field and issue no money
 - configurable earning rule (points per THB)

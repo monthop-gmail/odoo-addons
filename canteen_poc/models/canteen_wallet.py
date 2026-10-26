@@ -44,7 +44,7 @@ class CanteenWallet(models.Model):
         """Idempotent demo/POC configuration: official-first PromptPay QR + no-cash shop POS.
 
         Returns dict with bank/journal/qr_pm/wallet_pm/pos_config records.
-        All config steps are the ones verified live on 20.0-20260926 (dis-882f5ddd#2).
+        All config steps were verified live on an Odoo 20.0 nightly build (2026-09-26).
         """
         env = self.env
         comp = env.company
@@ -55,11 +55,19 @@ class CanteenWallet(models.Model):
         comp.currency_id = env.ref('base.THB')
         bank = self._promptpay_bank()
         if not bank:
+            # No default number in code: a real-looking mobile would route QR payments to a stranger.
+            mobile = (env['ir.config_parameter'].sudo().get_param('canteen_poc.promptpay_mobile') or '').strip()
+            if not mobile:
+                raise UserError(
+                    "PromptPay mobile is not configured. Set the system parameter "
+                    "'canteen_poc.promptpay_mobile' (Settings > Technical > System Parameters) "
+                    "to the receiving PromptPay mobile number."
+                )
             bank = env['res.partner.bank'].create({
                 'partner_id': comp.partner_id.id,
-                'account_number': '0812345678',
+                'account_number': mobile,
                 'proxy_type': 'mobile',
-                'proxy_value': '0812345678',
+                'proxy_value': mobile,
             })
         journal = env['account.journal'].search([('company_id', '=', comp.id), ('type', '=', 'bank')], limit=1)
         if not journal:

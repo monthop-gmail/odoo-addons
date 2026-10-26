@@ -88,11 +88,19 @@ class ImpactPointWallet(models.Model):
             ('proxy_type', 'in', ['mobile', 'merchant_tax_id', 'ewallet_id']),
         ], limit=1)
         if not bank:
+            # No default number in code: a real-looking mobile would route QR payments to a stranger.
+            mobile = (env['ir.config_parameter'].sudo().get_param('donation_poc.promptpay_mobile') or '').strip()
+            if not mobile:
+                raise UserError(
+                    "PromptPay mobile is not configured. Set the system parameter "
+                    "'donation_poc.promptpay_mobile' (Settings > Technical > System Parameters) "
+                    "to the receiving PromptPay mobile number."
+                )
             bank = env['res.partner.bank'].create({
                 'partner_id': comp.partner_id.id,
-                'account_number': '0899998888',
+                'account_number': mobile,
                 'proxy_type': 'mobile',
-                'proxy_value': '0899998888',
+                'proxy_value': mobile,
             })
         if not env['impact.point.rule'].search([('active', '=', True)], limit=1):
             env['impact.point.rule'].create({})
