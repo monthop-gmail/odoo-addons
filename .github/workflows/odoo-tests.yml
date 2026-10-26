@@ -1,0 +1,206 @@
+name: Odoo tests
+
+# Installs and tests the modules of this repo on the official Odoo image whose
+# series matches the branch (push) or the base branch (pull request).
+# - job "test": blocking gate for modules whose manifest is <series>.*
+# - job "pending-install": non-blocking install probe for the other modules
+
+on:
+  push:
+    branches: ['[0-9]*.0']
+  pull_request:
+    branches: ['[0-9]*.0']
+  workflow_dispatch:
+
+concurrency:
+  group: odoo-tests-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SERIES: ${{ github.base_ref || github.ref_name }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U odoo"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select modules
+        id: select
+        run: |
+          if [ -f .devcontainer/scripts/addons-path.sh ]; then
+            host_path="$(REPO_ROOT="$PWD" CORE_ADDONS= bash .devcontainer/scripts/addons-path.sh)"
+          else
+            host_path="$PWD"
+          fi
+          python3 .github/scripts/select-modules.py --series "$SERIES" \
+            --addons-path "$host_path" --host-root "$PWD" --container-root /workspace --summary
+
+      - name: No module ready
+        if: steps.select.outputs.ready == ''
+        run: |
+          echo "ไม่มีโมดูลพร้อมเทสต์บน Odoo $SERIES (no module has a $SERIES.* manifest) — job test ผ่านโดยไม่รัน Odoo" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Pull Odoo image
+        id: image
+        if: steps.select.outputs.ready != ''
+        run: |
+          image="odoo:$SERIES"
+          docker pull -q "$image" || { image="odoo:${SERIES%.0}"; docker pull -q "$image"; }
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Install and test ready modules
+        if: steps.select.outputs.ready != ''
+        env:
+          IMAGE: ${{ steps.image.outputs.image }}
+          READY: ${{ steps.select.outputs.ready }}
+          ADDONS_PATH: ${{ steps.select.outputs.addons_path }}
+          NETWORK: ${{ job.services.postgres.network }}
+          PG_ID: ${{ job.services.postgres.id }}
+        run: |
+          mkdir -p logs
+          tags="$(echo "$READY" | sed 's#^#/#; s#,#,/#g')"
+          set +e
+          docker run --rm --network "$NETWORK" -v "$PWD:/workspace:ro" --entrypoint odoo "$IMAGE" \
+            -d ci --db_host postgres --db_user odoo --db_password odoo \
+            --addons-path "$ADDONS_PATH" -i "$READY" \
+            --test-enable --test-tags "$tags" \
+            --stop-after-init --without-demo=all --log-level=test --no-http \
+            > logs/test.log 2>&1
+          rc=$?
+          set -e
+          problems=()
+          [ "$rc" -eq 0 ] || problems+=("odoo exit code $rc")
+          grep -qE ' (ERROR|CRITICAL) ' logs/test.log && problems+=("ERROR/CRITICAL in log")
+          grep -q 'Some modules are not loaded' logs/test.log && problems+=("Some modules are not loaded")
+          result="$(grep -E '[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests' logs/test.log | tail -1 | sed -E 's/.*(\b[0-9]+ failed, [0-9]+ error\(s\) of [0-9]+ tests).*/\1/')"
+          if [ -n "$result" ] && ! echo "$result" | grep -qE '^0 failed, 0 error'; then
+            problems+=("tests: $result")
+          fi
+          for m in ${READY//,/ }; do
+            state="$(docker exec "$PG_ID" psql -U odoo -d ci -tAc "select state from ir_module_module where name='$m'" 2>/dev/null)"
+            [ "$state" = installed ] || problems+=("$m state=${state:-missing}")
+          done
+          {
+            echo "### Test result on \`$IMAGE\`"
+            echo
+            echo "- modules: \`$READY\`"
+            echo "- tests: ${result:-no test summary line found}"
+            if [ ${#problems[@]} -eq 0 ]; then
+              echo "- **PASS**"
+            else
+              echo "- **FAIL**: $(IFS='; '; echo "${problems[*]}")"
+              echo
+              echo '```'
+              grep -E ' (ERROR|CRITICAL) |FAIL:|Some modules are not loaded' logs/test.log | head -20
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          [ ${#problems[@]} -eq 0 ]
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.select.outputs.ready != ''
+        with:
+          name: odoo-test-log
+          path: logs/
+          retention-days: 7
+
+  pending-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd "pg_isready -U odoo"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select modules
+        id: select
+        run: |
+          if [ -f .devcontainer/scripts/addons-path.sh ]; then
+            host_path="$(REPO_ROOT="$PWD" CORE_ADDONS= bash .devcontainer/scripts/addons-path.sh)"
+          else
+            host_path="$PWD"
+          fi
+          python3 .github/scripts/select-modules.py --series "$SERIES" \
+            --addons-path "$host_path" --host-root "$PWD" --container-root /workspace
+
+      - name: Nothing to probe
+        if: steps.select.outputs.pending_installable == ''
+        run: echo "ไม่มีโมดูล pending ที่ installable ให้ลองติดตั้ง" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Pull Odoo image
+        id: image
+        if: steps.select.outputs.pending_installable != ''
+        run: |
+          image="odoo:$SERIES"
+          docker pull -q "$image" || { image="odoo:${SERIES%.0}"; docker pull -q "$image"; }
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Try installing each pending module
+        if: steps.select.outputs.pending_installable != ''
+        env:
+          IMAGE: ${{ steps.image.outputs.image }}
+          PENDING: ${{ steps.select.outputs.pending_installable }}
+          ADDONS_PATH: ${{ steps.select.outputs.addons_path }}
+          NETWORK: ${{ job.services.postgres.network }}
+          PG_ID: ${{ job.services.postgres.id }}
+        run: |
+          mkdir -p logs
+          {
+            echo "## Pending install on \`$IMAGE\` (non-blocking)"
+            echo
+            echo "| Module | Result | First error |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for m in ${PENDING//,/ }; do
+            db="p_$m"
+            log="logs/install-$m.log"
+            set +e
+            docker run --rm --network "$NETWORK" -v "$PWD:/workspace:ro" --entrypoint odoo "$IMAGE" \
+              -d "$db" --db_host postgres --db_user odoo --db_password odoo \
+              --addons-path "$ADDONS_PATH" -i "$m" \
+              --stop-after-init --without-demo=all --no-http > "$log" 2>&1
+            rc=$?
+            set -e
+            state="$(docker exec "$PG_ID" psql -U odoo -d "$db" -tAc "select state from ir_module_module where name='$m'" 2>/dev/null)"
+            err="$(grep -m1 -E ' (ERROR|CRITICAL) ' "$log" || true)"
+            if [ "$rc" -eq 0 ] && [ "$state" = installed ] && [ -z "$err" ]; then
+              result="✅ installed"
+            else
+              result="❌ failed (exit $rc, state ${state:-missing})"
+              [ -n "$err" ] || err="$(grep -m1 -E " WARNING .*\b$m\b" "$log" || grep -m1 -iE 'unmet|invalid module|not installable|Traceback' "$log" || tail -1 "$log")"
+            fi
+            err="$(echo "$err" | sed -E 's/^[0-9-]+ [0-9:,]+ [0-9]+ //' | cut -c1-200 | sed 's/|/\\|/g; s/`/'"'"'/g')"
+            echo "| \`$m\` | $result | ${err:-} |" >> "$GITHUB_STEP_SUMMARY"
+            echo "$m: $result ${err:-}"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.select.outputs.pending_installable != ''
+        with:
+          name: odoo-pending-install-logs
+          path: logs/
+          retention-days: 7
