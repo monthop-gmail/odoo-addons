@@ -25,7 +25,7 @@
         'reports/report_form_document.xml',
         'views/menu.xml',
     ],
-    'installable': True,
+    'installable': False,  # not yet migrated to 20.0
     'application': True,
     'auto_install': False,
     'post_init_hook': 'post_init_hook',
