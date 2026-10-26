@@ -142,7 +142,8 @@ class TestApplyMergeFields(TransactionCase):
             'template_id': tmpl.id,
             'case_id': case.id,
         })
-        # body_html should have replacements applied
+        # 2-step merge: create keeps placeholders, apply replaces them
+        doc.action_apply_merge_fields()
         if doc.body_html:
             self.assertNotIn('%(plaintiff)s', doc.body_html)
             self.assertNotIn('%(court)s', doc.body_html)
