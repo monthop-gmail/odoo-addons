@@ -20,4 +20,7 @@ Manifest: `19.0.1.3.0` → `20.0.1.3.0`, `installable: False` removed.
 script (guide's rules require none for these changes). No module behaviour change.
 No new migration rule discovered.
 
-CI result: see below.
+CI result (commit `7a18c41`, run
+https://github.com/monthop-gmail/odoo-addons/actions/runs/40283163983):
+job `test` green on `odoo:20.0`, ready = `canteen_poc,donation_poc,legal_forms,village_poc`,
+`legal_forms: 57 tests` — `0 failed, 0 error(s) of 71 tests` overall.
