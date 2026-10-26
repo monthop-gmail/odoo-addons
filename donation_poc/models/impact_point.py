@@ -89,7 +89,7 @@ class ImpactPointWallet(models.Model):
         ], limit=1)
         if not bank:
             # No default number in code: a real-looking mobile would route QR payments to a stranger.
-            mobile = (env['ir.config_parameter'].sudo().get_param('donation_poc.promptpay_mobile') or '').strip()
+            mobile = env['ir.config_parameter'].sudo().get_str('donation_poc.promptpay_mobile', '').strip()
             if not mobile:
                 raise UserError(
                     "PromptPay mobile is not configured. Set the system parameter "

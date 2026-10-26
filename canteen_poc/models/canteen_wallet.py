@@ -56,7 +56,7 @@ class CanteenWallet(models.Model):
         bank = self._promptpay_bank()
         if not bank:
             # No default number in code: a real-looking mobile would route QR payments to a stranger.
-            mobile = (env['ir.config_parameter'].sudo().get_param('canteen_poc.promptpay_mobile') or '').strip()
+            mobile = env['ir.config_parameter'].sudo().get_str('canteen_poc.promptpay_mobile', '').strip()
             if not mobile:
                 raise UserError(
                     "PromptPay mobile is not configured. Set the system parameter "

@@ -7,7 +7,7 @@ class TestDonationPoc(TransactionCase):
     def setUp(self):
         super().setUp()
         # Obvious test-only PromptPay number (10 digits as l10n_th requires); never a real account.
-        self.env['ir.config_parameter'].sudo().set_param('donation_poc.promptpay_mobile', '0000000000')
+        self.env['ir.config_parameter'].sudo().set_str('donation_poc.promptpay_mobile', '0000000000')
 
     def _setup(self):
         setup = self.env['impact.point.wallet'].ensure_demo_setup()

@@ -22,3 +22,4 @@ Odoo addons สาธารณะ (public) ของ monthop-gmail
 - เป็น **Fast PoC** ใช้ข้อมูลสังเคราะห์ (synthetic data) เท่านั้น **ไม่ใช่ production** — การชำระเงิน, AI advisory และ external wallet (TruePoint/TrueMoney) เป็น mock/simulated
 - donation_poc และ canteen_poc ต้องตั้ง System Parameter เบอร์ PromptPay ผู้รับเงินก่อนเรียก demo setup
   (`donation_poc.promptpay_mobile`, `canteen_poc.promptpay_mobile`) — ถ้าไม่ได้ตั้งระบบจะ raise `UserError` ไม่มีเบอร์ default ในโค้ด
+  - Odoo 20 ไม่มี `get_param`/`set_param` แล้ว — โค้ดอ่านค่าด้วย `get_str(key, '')` และตั้งค่าในเทสต์/สคริปต์ด้วย `set_str(key, value)`
