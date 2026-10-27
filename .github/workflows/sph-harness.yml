@@ -48,6 +48,25 @@ jobs:
         run: python3 scripts/harness.py up
       - name: Live-harness suite (G1 HTTP / G2 race)
         run: python3 scripts/live_suite.py
+      - name: Surface failures as annotations
+        # Logs live in the artifact (not readable everywhere); repeat the essential lines as annotations.
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          seen = 0
+          for path in sorted(pathlib.Path('evidence').glob('**/*')):
+              if not path.is_file() or path.suffix not in ('.log', '.json', '.txt', '.xml'):
+                  continue
+              lines = path.read_text(errors='replace').splitlines()
+              for i, line in enumerate(lines):
+                  if re.search(r'(ERROR|CRITICAL|Traceback|AssertionError|FAIL[: ]|"status": "FAIL")', line):
+                      tail = ' | '.join(l.strip() for l in lines[i:i + 12])
+                      print(f"::error title={path.name}::{tail[:900]}")
+                      seen += 1
+                      if seen >= 25:
+                          raise SystemExit(0)
+          PY
       - name: Always remove this harness's containers and volumes
         if: always()
         run: python3 scripts/harness.py down
