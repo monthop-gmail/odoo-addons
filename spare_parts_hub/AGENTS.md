@@ -3,8 +3,10 @@
 Maintainer: monthop-gmail
 Reviewer: monthop-gmail
 
-- Work on `sph/poc`; do not merge or open PRs into `main`.
-- Scope: this folder and `.github/workflows/sph-poc.yml` only.
+- Lives in `monthop-gmail/odoo-addons` (`spare_parts_hub/`, branch per Odoo series); moved from
+  `odoo-contributions` `custom-modules/spare-parts-hub-poc` (`sph/poc` @ `00260a7`) with history.
+  Work on a topic branch and open a PR into the series branch; the owner merges.
+- Scope: this folder and `.github/workflows/sph-harness.yml` only.
 - MIT applies to original files here only. Do not copy Odoo core/OCA code.
 - Odoo 19 Community only; synthetic data only; no production connections.
 - B0-B3 infrastructure and B4a models/seed and B4b G1 isolation/B4c reservations/B4d authority are authorized. Gate acceptance requires live CI evidence.

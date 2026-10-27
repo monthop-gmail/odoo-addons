@@ -1,0 +1,61 @@
+name: spare_parts_hub harness
+
+# Pinned Odoo CE harness for spare_parts_hub (moved from odoo-contributions
+# custom-modules/spare-parts-hub-poc, branch sph/poc). Runs only when the
+# folder or this workflow changes.
+on:
+  push:
+    branches: ['19.0', '20.0']
+    paths:
+      - 'spare_parts_hub/**'
+      - '.github/workflows/sph-harness.yml'
+  pull_request:
+    branches: ['19.0', '20.0']
+    paths:
+      - 'spare_parts_hub/**'
+      - '.github/workflows/sph-harness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sph-harness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: spare_parts_hub
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          # upgrade_path / baseline_diff compare with commits from before the subtree import
+          fetch-depth: 0
+      - name: Static pins and drift negative controls
+        run: |
+          python3 scripts/check_pins.py
+          python3 scripts/test_pin_guard.py
+          python3 scripts/test_live_suite.py
+          python3 scripts/test_test_results.py
+      - name: Clean module install and smoke test
+        run: python3 scripts/harness.py test
+      - name: Verify one-command UI startup from a disposable database
+        run: python3 scripts/harness.py up
+      - name: Live-harness suite (G1 HTTP / G2 race)
+        run: python3 scripts/live_suite.py
+      - name: Always remove this harness's containers and volumes
+        if: always()
+        run: python3 scripts/harness.py down
+      - name: Preserve version metadata and synthetic test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: sph-harness-evidence
+          path: spare_parts_hub/evidence/
+          if-no-files-found: ignore
+          retention-days: 7
