@@ -342,7 +342,7 @@ M5 pins exact central `lot_stock_id` availability with child-only stock denied; 
 ### B6b: one-command synthetic Flow A
 
 From this folder run `python3 scripts/flow_a.py`. It removes this checkout's
-harness volumes, starts a clean pinned Odoo 19 harness, seeds a distinct synthetic
+harness volumes, starts a clean pinned Odoo 20 harness, seeds a distinct synthetic
 Flow A dataset, runs two concurrent HTTP reservists, writes evidence, and always
 tears down the harness. Docker/Compose and the existing Python harness are needed.
 CI runs the same worker after real G3 via the existing live step; no workflow or
@@ -369,7 +369,7 @@ in evidence. Existing G1/G2/G3 artifacts and the 77-test floor remain intact.
 
 Review #94: mixed locked writes by an approver are rejected, role and scope reserve
 denials both use UserError(Unavailable), and legacy PO state=done is defensively
-rejected only (Odoo 19 locking uses boolean locked).
+rejected only (Odoo 19+ locking uses boolean locked).
 
 **WIPE WARNING:** `flow_a.py` deletes this checkout's disposable harness volumes
 before starting. Never point it at a non-disposable database or reuse its compose

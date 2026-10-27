@@ -8,7 +8,7 @@ Reviewer: monthop-gmail
   Work on a topic branch and open a PR into the series branch; the owner merges.
 - Scope: this folder and `.github/workflows/sph-harness.yml` only.
 - MIT applies to original files here only. Do not copy Odoo core/OCA code.
-- Odoo 19 Community only; synthetic data only; no production connections.
+- Odoo 20 Community only (19.0 lives on branch 19.0); synthetic data only; no production connections.
 - B0-B3 infrastructure and B4a models/seed and B4b G1 isolation/B4c reservations/B4d authority are authorized. Gate acceptance requires live CI evidence.
 - No new credentials, secrets, permissions or non-harness deployment.
 - Pin changes must update `version-pins.json` and runtime inventory, then pass
