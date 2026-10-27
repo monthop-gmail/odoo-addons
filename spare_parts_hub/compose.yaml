@@ -25,7 +25,7 @@
       ]
     },
     "odoo": {
-      "image": "docker.io/library/odoo:19.0-20260926@sha256:22bd89f3d205e59c24dbb716943dcb8cd89ea090ed4d32ce1bfdcf087fafc5df",
+      "image": "docker.io/library/odoo:20.0-20261015@sha256:fc098344195314fde62c8922a19365b3112d638f37a4fbbcb3be457b845238fe",
       "platform": "linux/amd64",
       "entrypoint": [
         "odoo"

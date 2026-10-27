@@ -100,8 +100,8 @@ class TestPOCenterScope(TransactionCase):
         self.assertFalse(self.env['res.users'].search([('group_ids','in',grant.id)]))
         self.assertFalse(grant.implied_ids)
         rule=self.env.ref('sph_core.scope_purchase_order')
-        self.assertTrue(rule['global'])
-        self.assertNotIn('_sph_scoped',rule.domain_force)
+        self.assertTrue(rule.kind=='restriction')
+        self.assertNotIn('_sph_scoped',rule.domain)
 
     def test_owner_immutable(self):
         po=self.orders[0]
@@ -284,7 +284,7 @@ class TestPOCenterScope(TransactionCase):
         self.assertFalse(actor.sph_center_ids)
         self.assertFalse(actor.has_group('sph_core.group_sph_po_hub'))
         rule=self.env.ref('sph_core.scope_stock_picking')
-        self.assertNotIn('_sph_scoped',rule.domain_force)
+        self.assertNotIn('_sph_scoped',rule.domain)
         for receipt in receipts:
             with self.assertRaises(AccessError):receipt.with_user(actor).read(['name'])
         self.assertFalse(self.env['stock.picking'].with_user(actor).search([('id','in',[r.id for r in receipts])]))
@@ -379,11 +379,11 @@ class TestPOCenterScope(TransactionCase):
             self.assertFalse(grant.implied_ids)
             self.assertFalse(self.env['res.users'].search_count([('group_ids','in',grant.id)]))
         rule=self.env.ref('sph_core.scope_stock_picking')
-        self.assertTrue(rule['global'])
-        self.assertIn('group_sph_picking_hub',rule.domain_force)
-        self.assertNotIn('group_sph_po_hub',rule.domain_force)
-        self.assertNotIn('_sph_scoped',rule.domain_force)
-        self.assertNotIn('group_sph_picking_hub',self.env.ref('sph_core.scope_purchase_order').domain_force)
+        self.assertTrue(rule.kind=='restriction')
+        self.assertIn('group_sph_picking_hub',rule.domain)
+        self.assertNotIn('group_sph_po_hub',rule.domain)
+        self.assertNotIn('_sph_scoped',rule.domain)
+        self.assertNotIn('group_sph_picking_hub',self.env.ref('sph_core.scope_purchase_order').domain)
 
     def test_po_and_picking_grants_are_independent(self):
         receipts=[]

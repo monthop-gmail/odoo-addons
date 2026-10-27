@@ -54,7 +54,7 @@ snapshot={
 }
 assert len(snapshot['xmlids'])==5
 metadata=env['ir.model.data'].search([('module','=','sph_core'),('name','=','scope_stock_picking')])
-rule=env['ir.rule'].browse(metadata.res_id)
+rule=env['ir.access'].browse(metadata.res_id)
 groups={key:{'implied':len(ref(key).implied_ids),'assignees':env['res.users'].search_count([('group_ids','in',ref(key).id)])}
     for key in ('group_sph_po_hub','group_sph_picking_hub')}
 assert all(row=={'implied':0,'assignees':0} for row in groups.values())
@@ -65,5 +65,5 @@ for label,members in (('none',[]),('center_a',centers[0].ids),('center_b',center
 assert visibility=={'none':0,'center_a':2,'center_b':1,'revoked':0}
 # Visibility probe membership writes roll back at shell exit, not part of retained fixture state.
 print('SPH_UPGRADE_PROBE '+json.dumps({'phase':phase,'snapshot':snapshot,'xmlid_count':len(metadata),
-    'rule_id':rule.id,'all_picking_rule_ids':sorted(env['ir.rule'].search([('model_id','=',rule.model_id.id)]).ids),
-    'rule_domain':rule.domain_force,'is_global':rule['global'],'groups':groups,'visibility_counts':visibility}),flush=True)
+    'rule_id':rule.id,'all_picking_rule_ids':sorted(env['ir.access'].search([('model_id','=',rule.model_id.id)]).ids),
+    'rule_domain':rule.domain,'is_global':rule.kind=='restriction','groups':groups,'visibility_counts':visibility}),flush=True)

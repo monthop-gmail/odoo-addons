@@ -4,14 +4,14 @@ import re
 assert env.cr.dbname=='sph_poc'
 assert phase in ('before','after')
 metadata=env['ir.model.data'].search([('module','=','sph_core'),('name','=','scope_stock_picking')])
-assert len(metadata)==1 and metadata.model=='ir.rule'
-rule=env['ir.rule'].browse(metadata.res_id).exists()
-assert len(rule)==1 and rule.model_id.model=='stock.picking' and rule['global']
-all_rule_ids=env['ir.rule'].search([('model_id','=',rule.model_id.id)]).ids
+assert len(metadata)==1 and metadata.model=='ir.access'
+rule=env['ir.access'].browse(metadata.res_id).exists()
+assert len(rule)==1 and rule.model_id.model=='stock.picking' and rule.kind=='restriction'
+all_rule_ids=env['ir.access'].search([('model_id','=',rule.model_id.id)]).ids
 business_counts={key:env[model].search_count([]) for key,model in (
     ('sales','sale.order'),('purchases','purchase.order'),('pickings','stock.picking'),('reservations','sph.reservation'))}
 assert not any(business_counts.values())
-grant_tokens=re.findall(r'sph_core\.(group_sph_\w+)',rule.domain_force)
+grant_tokens=re.findall(r'sph_core\.(group_sph_\w+)',rule.domain)
 expected='group_sph_po_hub' if phase=='before' else 'group_sph_picking_hub'
 assert grant_tokens==[expected]
 groups={};visibility={}
@@ -39,5 +39,5 @@ if phase=='after':
     # No commit: the probe-only picking and grant writes roll back at shell exit.
 print('SPH_UPGRADE_PROBE '+json.dumps({'phase':phase,'rule_id':rule.id,
     'xmlid_count':len(metadata),'all_picking_rule_ids':sorted(all_rule_ids),
-    'rule_model':rule.model_id.model,'is_global':rule['global'],'grant_tokens':grant_tokens,
+    'rule_model':rule.model_id.model,'is_global':rule.kind=='restriction','grant_tokens':grant_tokens,
     'group_observations':groups,'visibility_counts':visibility,'business_counts':business_counts}),flush=True)

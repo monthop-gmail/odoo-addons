@@ -3,12 +3,12 @@
   "platform": "linux/amd64",
   "odoo": {
     "repository": "docker.io/library/odoo",
-    "tag": "19.0-20260926",
-    "digest": "sha256:22bd89f3d205e59c24dbb716943dcb8cd89ea090ed4d32ce1bfdcf087fafc5df",
-    "deb_version": "19.0.20260926",
-    "runtime_version": "19.0-20260926",
-    "docker_build_ref": "8e31a7776c1a38761acf992ddf8aba71f6c234ec",
-    "deb_sha1": "cb9d876779edc8d5f0394ddd3936a387e349077c"
+    "tag": "20.0-20261015",
+    "digest": "sha256:fc098344195314fde62c8922a19365b3112d638f37a4fbbcb3be457b845238fe",
+    "deb_version": "20.0.20261015",
+    "runtime_version": "20.0-20261015",
+    "docker_build_ref": "bf04b8fe14d39e4e1090bc41e56460341ad3a994",
+    "deb_sha1": "ae908bc0fa5e01d076a74a1008f07ad8869f819d"
   },
   "postgres": {
     "repository": "docker.io/library/postgres",
@@ -19,6 +19,6 @@
   "python_version": "3.12.3",
   "lock_sha256": {
     "requirements.lock": "92e3536e786f69b43dc026f9c6ab089cbdf477b47401915af401afa2603e3b44",
-    "runtime-python.lock": "cdd7c2e80993635e3ca164fe764d6c0221cc6983676dbbf744163d3a532378b6"
+    "runtime-python.lock": "2990a1eb44aa3b9e879d073a0054eac5e26b73766248e1211ceceb515a0b9871"
   }
 }

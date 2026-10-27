@@ -17,6 +17,7 @@ freezegun==1.2.1
 geoip2==2.9.0
 gevent==24.2.1
 greenlet==3.0.3
+h11==0.14.0
 idna==3.6
 isodate==0.6.1
 jinja2==3.1.2
@@ -27,7 +28,7 @@ markupsafe==2.1.5
 maxminddb==2.5.2
 num2words==0.5.13
 odfpy==1.4.2
-odoo==19.0.post20260926
+odoo==20.0.post20261015
 ofxparse==0.21
 openpyxl==3.1.2
 passlib==1.7.4
@@ -43,7 +44,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycairo==1.25.1
 pyopenssl==23.2.0
-pypdf2==2.12.1
+pypdf==4.0.2
 pypng==0.20231004.0
 pyserial==3.5
 python-dateutil==2.8.2

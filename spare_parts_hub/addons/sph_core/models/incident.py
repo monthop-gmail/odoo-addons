@@ -2,7 +2,31 @@
 import re
 from odoo import api, fields, models
 from odoo.exceptions import AccessError, MissingError, UserError
+from odoo.fields import Domain
+from odoo.tools.safe_eval import safe_eval
 from .authority import approver, audit
+
+
+def restriction_domain(env, model_name, operation):
+    """AND of the group-less ir.access rows (restrictions) for the current user.
+
+    19.0 used ir.rule._compute_domain: the rule scope without the ACL grant.
+    On 20.0 rules and ACLs are both ir.access; restrictions are the rows with
+    no group, so this keeps "rule scope, no native permission".
+    """
+    from odoo.addons.base.models.ir_access import IN_SELECTION
+    access_model = env['ir.access']
+    context = None
+    domains = []
+    for access in access_model._get_all_access().get(model_name, ()):
+        if access.group_id or access.operation not in IN_SELECTION[operation]:
+            continue
+        domain = access.domain
+        if not isinstance(domain, Domain):
+            context = context or access_model._eval_context()
+            domain = Domain(safe_eval(domain, context))
+        domains.append(domain)
+    return Domain.AND(domains)
 
 REFERENCE=re.compile(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}',re.ASCII)
 
@@ -16,9 +40,9 @@ def incident_write(records,values,parent):
         if records._name=='purchase.order':
             # SPH approvers intentionally lack a native Purchase read ACL. Match
             # their bounded approval capability, retaining actual-user rule scope.
-            domain=list(records.env['ir.rule']._compute_domain(records._name,'read'))
-            allowed=records.sudo().search(domain+[('id','in',records.ids),
-                ('company_id','in',records.env.companies.ids)])
+            domain=restriction_domain(records.env,records._name,'read')
+            allowed=records.sudo().search(domain&Domain([('id','in',records.ids),
+                ('company_id','in',records.env.companies.ids)]))
             if len(allowed)!=len(records):raise AccessError('Unavailable')
         else:
             records.check_access('read')

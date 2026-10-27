@@ -72,19 +72,22 @@ class SalePricelist(models.Model):
 
 
 class ScrapAuthority(models.Model):
-    _inherit='stock.scrap'
-    def action_validate(self):
+    # 20.0: stock.scrap is gone; a scrap is a stock.move with is_scrap=True,
+    # validated by action_scrap() -> _action_scrap() (19.0: action_validate -> do_scrap).
+    _inherit='stock.move'
+    def action_scrap(self):
         approver(self,'scrap.validate')
-        with internal_stock(): result=super(ScrapAuthority,self.sudo()).action_validate()
+        with internal_stock(): result=super(ScrapAuthority,self.sudo()).action_scrap()
         audit(self,'scrap.validate','allow')
         return result
-    def do_scrap(self):
+    def _action_scrap(self):
         approver(self,'scrap.validate')
-        with internal_stock(): result=super(ScrapAuthority,self.sudo()).do_scrap()
+        with internal_stock(): result=super(ScrapAuthority,self.sudo())._action_scrap()
         audit(self,'scrap.validate','allow')
         return result
     def write(self, values):
-        if values.get('state') == 'done': approver(self,'scrap.validate')
+        if values.get('state') == 'done' and any(move.sudo().is_scrap for move in self):
+            approver(self,'scrap.validate')
         return super().write(values)
 
 

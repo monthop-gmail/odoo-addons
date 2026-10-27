@@ -16,7 +16,8 @@ def prepare(env):
         'order_line':[Command.create({'product_id':product.id,'product_uom_qty':1,'price_unit':105})]})
     location=env.ref('sph_core.fixture_wh_central').lot_stock_id
     quant=env['stock.quant'].search([('product_id','=',product.id),('location_id','=',location.id)],limit=1)
-    scrap=env['stock.scrap'].create({'product_id':product.id,'scrap_qty':1,'location_id':location.id})
+    # 20.0: a scrap is a draft stock.move with is_scrap=True (stock.scrap was removed)
+    scrap=env['stock.move'].create({'product_id':product.id,'product_uom_qty':1,'quantity':1,'location_id':location.id,'is_scrap':True})
     pricelist=env['product.pricelist'].create({'name':'FIXTURE alternate authority price','sph_center_id':center.id,'currency_id':env.company.currency_id.id})
     return {'so':sale,'pricelist':pricelist,'bot':bot,'approver':approver,'po':po,'so_line':sale.order_line,'po_line':po.order_line,
             'quant':quant,'scrap':scrap,'supplier':supplier,'product':product}
@@ -109,9 +110,9 @@ class TestPurchaseAuthority(TransactionCase):
     def test_approver_so_price_allowed(self): self.allow('so_line','write',{'price_unit':99})
     def test_bot_po_price_denied(self): self.deny('po_line','write',{'price_unit':99})
     def test_approver_po_price_allowed(self): self.allow('po_line','write',{'price_unit':99})
-    def test_bot_scrap_denied(self): self.deny('scrap','action_validate')
+    def test_bot_scrap_denied(self): self.deny('scrap','action_scrap')
     def test_approver_scrap_allowed(self):
-        self.allow('scrap','action_validate');self.assertEqual(self.fx['scrap'].state,'done')
+        self.allow('scrap','action_scrap');self.assertEqual(self.fx['scrap'].state,'done')
     def test_bot_inventory_denied(self): self.deny('quant','action_apply_inventory')
     def test_approver_inventory_allowed(self):
         self.fx['quant'].with_context(inventory_mode=True).inventory_quantity=7
@@ -181,7 +182,7 @@ class TestPurchaseAuthority(TransactionCase):
 
     def test_bot_do_scrap_denied(self):
         before=self.fx['quant'].quantity
-        self.deny('scrap','do_scrap')
+        self.deny('scrap','_action_scrap')
         self.assertEqual(self.fx['scrap'].state,'draft')
         self.assertEqual(self.fx['quant'].quantity,before)
 

@@ -64,8 +64,10 @@ def allow(record,method,action,args=None,kwargs=None):
 
 
 # B5b: exercise public lower-level mutation entrypoints over committed HTTP.
-deny(fx['scrap'],'do_scrap','scrap.validate')
-rows[-1]['path']='do_scrap'
+# 20.0: stock.scrap/do_scrap are gone and _action_scrap is private (not callable over RPC);
+# the public lower-level path on a scrap move is write(state=done).
+deny(fx['scrap'],'write','scrap.validate',[{'state':'done'}])
+rows[-1]['path']='write(state=done)'
 quant_model=env['stock.quant']
 before=audit_count(quant_model,'bot','quant.create','deny')
 response=rpc('bot',quant_model,'create',[{
@@ -77,7 +79,7 @@ observed(quant_model,'bot','quant.create','deny',before)
 rows[-1]['path']='create'
 with env.registry.cursor() as cursor:
     observer=api.Environment(cursor,SUPERUSER_ID,{})
-    assert observer['stock.scrap'].browse(fx['scrap'].id).state=='draft'
+    assert observer['stock.move'].browse(fx['scrap'].id).state=='draft'
     assert observer['stock.quant'].browse(fx['quant'].id).quantity==fx['quant'].quantity
 
 # F3: a read-only reservation role cannot convert a draft SO to a commitment.
@@ -157,7 +159,7 @@ for key,method,action,args in (
     ('so_line','write','sale.order.line.discount',[{'discount':7}]),
     ('po_line','write','purchase.order.line.discount',[{'discount':7}]),
     ('so','write','sale.order.pricelist_id',[{'pricelist_id':fx['pricelist'].id}]),
-    ('scrap','action_validate','scrap.validate',[]),
+    ('scrap','action_scrap','scrap.validate',[]),
     ('quant','action_apply_inventory','inventory.apply',[]),
     ('quant','write','quant.write',[{'quantity':5}])):
     deny(fx[key],method,action,args)
@@ -180,7 +182,7 @@ with env.registry.cursor() as cursor:
     observer=api.Environment(cursor,SUPERUSER_ID,{})
     po=observer['purchase.order'].browse(fx['po'].id)
     assert po.state=='purchase' and po.sph_maker_uid==fx['bot'].id
-    assert observer['stock.scrap'].browse(fx['scrap'].id).state=='done'
+    assert observer['stock.move'].browse(fx['scrap'].id).state=='done'
 # Independently committed deny rows remain visible after failed RPC rollback.
 response=rpc('approver',fx['maker_po'],'sph_review')
 assert response.get('error',{}).get('data',{}).get('message')=='Unavailable'
