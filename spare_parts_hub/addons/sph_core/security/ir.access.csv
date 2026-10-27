@@ -1,0 +1,30 @@
+id,name,model_id,group_id/id,operation,domain
+access_sph_center_admin,SPH center admin,sph.center,base.group_system,crud,
+access_sph_fitment_admin,SPH fitment admin,sph.fitment.tag,base.group_system,crud,
+access_sph_read_sale_order_group_sph_reader,SPH readonly sale_order_group_sph_reader,sale.order,group_sph_reader,r,
+access_sph_read_sale_order_base_group_portal,SPH readonly sale_order_base_group_portal,sale.order,base.group_portal,r,
+access_sph_read_sale_order_line_group_sph_reader,SPH readonly sale_order_line_group_sph_reader,sale.order.line,group_sph_reader,r,
+access_sph_read_sale_order_line_base_group_portal,SPH readonly sale_order_line_base_group_portal,sale.order.line,base.group_portal,r,
+access_sph_read_product_pricelist_group_sph_reader,SPH readonly product_pricelist_group_sph_reader,product.pricelist,group_sph_reader,r,
+access_sph_read_product_pricelist_base_group_portal,SPH readonly product_pricelist_base_group_portal,product.pricelist,base.group_portal,r,
+access_sph_read_product_pricelist_item_group_sph_reader,SPH readonly product_pricelist_item_group_sph_reader,product.pricelist.item,group_sph_reader,r,
+access_sph_read_product_pricelist_item_base_group_portal,SPH readonly product_pricelist_item_base_group_portal,product.pricelist.item,base.group_portal,r,
+access_sph_read_stock_picking_group_sph_reader,SPH readonly stock_picking_group_sph_reader,stock.picking,group_sph_reader,r,
+access_sph_read_stock_picking_base_group_portal,SPH readonly stock_picking_base_group_portal,stock.picking,base.group_portal,r,
+access_sph_read_sph_center_group_sph_reader,SPH readonly sph_center_group_sph_reader,sph.center,group_sph_reader,r,
+access_sph_read_sph_center_base_group_portal,SPH readonly sph_center_base_group_portal,sph.center,base.group_portal,r,
+access_sph_reservation_admin,SPH reservation admin,sph.reservation,base.group_system,crud,
+access_sph_audit_admin,SPH audit admin,sph.authority.audit,base.group_system,r,
+scope_sale_order,SPH global sale.order scope,sale.order,,crud,"[('sph_center_id', 'in', user.sph_center_ids.ids)] if user._sph_scoped() else [(1, '=', 1)]"
+scope_sale_order_line,SPH global sale.order.line scope,sale.order.line,,crud,"[('sph_center_id', 'in', user.sph_center_ids.ids)] if user._sph_scoped() else [(1, '=', 1)]"
+scope_product_pricelist,SPH global product.pricelist scope,product.pricelist,,crud,"[('sph_center_id', 'in', user.sph_center_ids.ids)] if user._sph_scoped() else [(1, '=', 1)]"
+scope_product_pricelist_item,SPH global product.pricelist.item scope,product.pricelist.item,,crud,"[('pricelist_id.sph_center_id', 'in', user.sph_center_ids.ids)] if user._sph_scoped() else [(1, '=', 1)]"
+scope_sph_center,SPH global sph.center scope,sph.center,,crud,"[('id', 'in', user.sph_center_ids.ids)] if user._sph_scoped() else [(1, '=', 1)]"
+scope_stock_quant,SPH no raw stock.quant,stock.quant,,crud,"[('id', '=', 0)] if user._sph_scoped() else [(1, ""="", 1)]"
+scope_stock_move,SPH no raw stock.move,stock.move,,crud,"[('id', '=', 0)] if user._sph_scoped() else [(1, ""="", 1)]"
+scope_stock_move_line,SPH no raw stock.move.line,stock.move.line,,crud,"[('id', '=', 0)] if user._sph_scoped() else [(1, ""="", 1)]"
+scope_purchase_order,SPH global PO center ownership,purchase.order,,crud,"[(1, '=', 1)] if user.has_group('sph_core.group_sph_po_hub') else [('sph_center_id', 'in', user.sph_center_ids.ids)]"
+scope_purchase_line,SPH global PO line ownership,purchase.order.line,,crud,"[(1, '=', 1)] if user.has_group('sph_core.group_sph_po_hub') else [('order_id.sph_center_id', 'in', user.sph_center_ids.ids)]"
+scope_purchase_mail,SPH PO mail ownership projection,mail.message,,crud,"['|', ('model', '!=', 'purchase.order'), ('sph_po_visible', '=', True)]"
+scope_purchase_attachment,SPH PO attachment ownership projection,ir.attachment,,crud,"['|', ('res_model', '!=', 'purchase.order'), ('sph_po_visible', '=', True)]"
+scope_stock_picking,SPH explicit picking membership or picking-only grant,stock.picking,,crud,"[(1, '=', 1)] if user.has_group('sph_core.group_sph_picking_hub') else [('sph_center_id', 'in', user.sph_center_ids.ids)]"

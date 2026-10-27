@@ -1,0 +1,6 @@
+<odoo>
+    <!-- Explicit exception only: no user/role receives this group in data. -->
+    <record id="group_sph_po_hub" model="res.groups">
+        <field name="name">SPH explicit all-center PO access</field>
+    </record>
+    </odoo>

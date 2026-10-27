@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "platform": "linux/amd64",
+  "odoo": {
+    "repository": "docker.io/library/odoo",
+    "tag": "20.0-20261015",
+    "digest": "sha256:fc098344195314fde62c8922a19365b3112d638f37a4fbbcb3be457b845238fe",
+    "deb_version": "20.0.20261015",
+    "runtime_version": "20.0-20261015",
+    "docker_build_ref": "bf04b8fe14d39e4e1090bc41e56460341ad3a994",
+    "deb_sha1": "ae908bc0fa5e01d076a74a1008f07ad8869f819d"
+  },
+  "postgres": {
+    "repository": "docker.io/library/postgres",
+    "tag": "16.15-bookworm",
+    "digest": "sha256:ec9f656f17c8b4dfebf49e58cf5c46d493d4846d4ea6d8b85d0637f68ee33bfc",
+    "runtime_version": "postgres (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)"
+  },
+  "python_version": "3.12.3",
+  "lock_sha256": {
+    "requirements.lock": "92e3536e786f69b43dc026f9c6ab089cbdf477b47401915af401afa2603e3b44",
+    "runtime-python.lock": "2990a1eb44aa3b9e879d073a0054eac5e26b73766248e1211ceceb515a0b9871"
+  }
+}

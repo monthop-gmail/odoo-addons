@@ -1,0 +1,3 @@
+<odoo>
+<record id="group_sph_reader" model="res.groups"><field name="name">SPH fixture context reader</field></record>
+</odoo>

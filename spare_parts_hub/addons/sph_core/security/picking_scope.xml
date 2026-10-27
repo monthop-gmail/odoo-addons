@@ -1,0 +1,6 @@
+<odoo>
+    <!-- Visibility only; no implied native roles and no seeded assignees. -->
+    <record id="group_sph_picking_hub" model="res.groups">
+        <field name="name">SPH explicit all-center picking visibility (no PO grant)</field>
+    </record>
+    </odoo>

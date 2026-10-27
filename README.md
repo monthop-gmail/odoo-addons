@@ -16,6 +16,7 @@ Odoo addons สาธารณะ (public) ของ monthop-gmail
 | village_poc | 20.0 | มาจาก village-odoo-poc |
 | donation_poc | 20.0 | มาจาก donation-odoo-poc |
 | canteen_poc | 20.0 | มาจาก canteen-odoo-poc |
+| `spare_parts_hub/` (`sph_core`) | 20.0 (กำลังย้าย) | PoC ศูนย์อะไหล่สหกรณ์ ย้ายมาจาก `odoo-contributions` `custom-modules/spare-parts-hub-poc` (branch `sph/poc` @ `00260a7`) พร้อม history · ไม่ใช่โมดูลที่ root: addon อยู่ที่ `spare_parts_hub/addons/sph_core` และมี harness + CI ของตัวเอง (`.github/workflows/sph-harness.yml`) · ข้อมูลสมมติเท่านั้น · MIT |
 
 ### หมายเหตุ village_poc / donation_poc / canteen_poc
 
