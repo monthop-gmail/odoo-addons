@@ -1,0 +1,51 @@
+name: spare_parts_hub pin discovery (temporary)
+
+# One-off, read-only: resolve the linux/amd64 digest and the runtime inventory of
+# the Odoo 20 image for a reviewed pin update (spare_parts_hub/README.md "Pins").
+# Results are emitted as annotations only. Delete this file in the same PR.
+on:
+  pull_request:
+    branches: ['20.0']
+    paths: ['.github/workflows/sph-pin-discovery.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      IMAGE: docker.io/library/odoo:20.0-20261015
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Resolve platform digest
+        run: |
+          docker buildx imagetools inspect "$IMAGE" --raw > index.json
+          python3 - <<'PY'
+          import json
+          idx = json.load(open('index.json'))
+          for m in idx.get('manifests', []):
+              p = m.get('platform', {})
+              if p.get('os') == 'linux' and p.get('architecture') == 'amd64' and not p.get('variant'):
+                  print(f"::notice title=amd64 digest::{m['digest']}")
+          PY
+      - name: Runtime inventory
+        run: |
+          DIGEST=$(python3 -c "import json;print([m['digest'] for m in json.load(open('index.json'))['manifests'] if m.get('platform',{}).get('architecture')=='amd64' and m.get('platform',{}).get('os')=='linux'][0])")
+          docker run --rm --platform linux/amd64 --entrypoint python3 \
+            -v "$PWD/spare_parts_hub/scripts:/opt/sph/scripts:ro" \
+            "docker.io/library/odoo:20.0-20261015@$DIGEST" /opt/sph/scripts/runtime_inventory.py > inv.json
+          python3 - <<'PY'
+          import json
+          d = json.load(open('inv.json'))
+          print(f"::notice title=runtime::python={d['python']} odoo_version={d['odoo_version']} odoo_deb={d['odoo_deb']} packages={len(d['packages'])}")
+          chunk, n = [], 1
+          for line in d['packages']:
+              if sum(len(x) + 1 for x in chunk) + len(line) > 800:
+                  print(f"::notice title=packages {n}::" + ' '.join(chunk)); chunk, n = [], n + 1
+              chunk.append(line)
+          if chunk: print(f"::notice title=packages {n}::" + ' '.join(chunk))
+          PY
