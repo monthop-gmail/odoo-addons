@@ -12,7 +12,9 @@ business_counts={key:env[model].search_count([]) for key,model in (
     ('sales','sale.order'),('purchases','purchase.order'),('pickings','stock.picking'),('reservations','sph.reservation'))}
 assert not any(business_counts.values())
 grant_tokens=re.findall(r'sph_core\.(group_sph_\w+)',rule.domain)
-expected='group_sph_po_hub' if phase=='before' else 'group_sph_picking_hub'
+# The B7->B8 grant change (po_hub -> picking_hub) predates the 20.0 baseline:
+# both phases now carry the picking-only grant and the upgrade must keep it.
+expected='group_sph_picking_hub'
 assert grant_tokens==[expected]
 groups={};visibility={}
 if phase=='after':

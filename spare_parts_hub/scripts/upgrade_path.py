@@ -8,9 +8,11 @@ import tempfile
 from harness import ROOT, PROJECT, ODOO_ARGS
 from upgrade_evidence import upgrade_checks, retained_checks
 
-# odoo-contributions e481eeda / 631cd523, as rewritten by git subtree into odoo-addons
-RETAINED_PREVIOUS='f10ed497fe70433a78e3c3a16f5f4dd6ebca6276'
-PREVIOUS='1260eb1a87cae51475d306412a65fdb93456e875'
+# 20.0 baseline: 7b6b6ab8 is the first sph_core commit that installs on Odoo 20 (PR #2).
+# The 19.0 bases (odoo-contributions e481eeda / 631cd523 -> f10ed497 / 1260eb1a after
+# git subtree) cannot install on the 20.0 image, so both upgrades start from it.
+RETAINED_PREVIOUS='7b6b6ab8714d7385028587aa1132f625b05370a1'
+PREVIOUS='7b6b6ab8714d7385028587aa1132f625b05370a1'
 
 
 def folder_tree(rev):

@@ -18,7 +18,7 @@ class TestP0Report(unittest.TestCase):
     def upgrade(self):
         business={'sales':0,'purchases':0,'pickings':0,'reservations':0}
         before={'xmlid_count':1,'rule_id':7,'all_picking_rule_ids':[1,7],
-            'grant_tokens':['group_sph_po_hub'],'rule_model':'stock.picking','is_global':True,
+            'grant_tokens':['group_sph_picking_hub'],'rule_model':'stock.picking','is_global':True,
             'business_counts':business}
         after=dict(before,grant_tokens=['group_sph_picking_hub'],
             visibility_counts={'none':0,'po_hub':0,'picking_hub':1,'revoked':0},

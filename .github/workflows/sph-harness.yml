@@ -53,8 +53,30 @@ jobs:
         if: failure()
         run: |
           python3 - <<'PY'
-          import pathlib, re
+          import json, pathlib, re
           seen = 0
+          def walk(node, path=''):
+              # JSON evidence: report every FAIL status / false check with its path.
+              if isinstance(node, dict):
+                  for key, value in node.items():
+                      here = f'{path}.{key}' if path else key
+                      if (key in ('status', 'result') and value == 'FAIL') or value is False:
+                          yield here, node
+                      yield from walk(value, here)
+              elif isinstance(node, list):
+                  for index, value in enumerate(node):
+                      yield from walk(value, f'{path}[{index}]')
+          for path in sorted(pathlib.Path('evidence').glob('**/*.json')):
+              try:
+                  data = json.loads(path.read_text())
+              except ValueError:
+                  continue
+              for where, node in walk(data):
+                  brief = {k: v for k, v in node.items() if not isinstance(v, (dict, list))}
+                  print(f"::error title={path.name} {where[:60]}::{json.dumps(brief)[:800]}")
+                  seen += 1
+                  if seen >= 40:
+                      raise SystemExit(0)
           for path in sorted(pathlib.Path('evidence').glob('**/*')):
               if not path.is_file() or path.suffix not in ('.log', '.json', '.txt', '.xml'):
                   continue

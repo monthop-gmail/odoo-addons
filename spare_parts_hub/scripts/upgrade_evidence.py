@@ -6,7 +6,7 @@ def upgrade_checks(before,after):
         'one_xmlid':before['xmlid_count']==after['xmlid_count']==1,
         'same_rule_id':before['rule_id']==after['rule_id'],
         'no_duplicate_picking_rules':before['all_picking_rule_ids']==after['all_picking_rule_ids'],
-        'picking_not_po_grant':before['grant_tokens']==['group_sph_po_hub'] and after['grant_tokens']==['group_sph_picking_hub'],
+        'picking_not_po_grant':before['grant_tokens']==after['grant_tokens']==['group_sph_picking_hub'],
         'no_seeded_grants':set(groups)=={'group_sph_po_hub','group_sph_picking_hub'} and
             all(row['implied_count']==row['assignee_count']==0 for row in groups.values()),
         'post_upgrade_grant_isolation':after['visibility_counts']=={'none':0,'po_hub':0,'picking_hub':1,'revoked':0},
