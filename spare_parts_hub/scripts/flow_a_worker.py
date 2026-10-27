@@ -28,7 +28,7 @@ try:
         session.update({'db':'sph_poc','uid':uid,'login':actor.login,
             'context':dict(actor.with_user(actor).context_get()),'session_token':actor._compute_session_token(session.sid)})
         root.session_store.save(session);sessions.append(session.sid)
-    env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+    env.transaction.invalidate_ormcache();env.cr.commit()
 
 
     def reserve(index):

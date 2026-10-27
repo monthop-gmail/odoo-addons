@@ -18,7 +18,8 @@ groups={};visibility={}
 if phase=='after':
     for key in ('group_sph_po_hub','group_sph_picking_hub'):
         group=env.ref('sph_core.'+key)
-        groups[key]={'implied_count':len(group.implied_ids),
+        # 20.0: base.group_user_regular is a privilege-tier marker on every regular group, not a grant
+        groups[key]={'implied_count':len(group.implied_ids-env.ref('base.group_user_regular')),
             'assignee_count':env['res.users'].search_count([('group_ids','in',group.id)])}
         assert groups[key]['implied_count']==groups[key]['assignee_count']==0
     user=env.ref('sph_core.fixture_user_native_actor')

@@ -93,9 +93,8 @@ with env.registry.cursor() as cursor:
 
 # Scope and nonexistent IDs have identical public errors and durable ID-free audit.
 fx['operator'].sph_center_ids=[(6,0,env.ref('sph_core.fixture_center_shared_b').ids)]
+env.transaction.invalidate_ormcache()
 env.cr.commit()
-env.registry.clear_cache()
-env.registry.signal_changes()
 for target in (fx['so'],env['sale.order'].browse(2147483647)):
     before=audit_count(env['sale.order'],'operator','sale.reserve.scope','deny')
     response=rpc('operator',target,'sph_reserve',['FIXTURE scope denial'])
@@ -211,7 +210,7 @@ for kwargs,action in (({'sph_center_id':env.ref('sph_core.fixture_center_shared_
     assert response.get('error',{}).get('data',{}).get('message')=='Unavailable'
     observed(env['purchase.order'],'approver',action,'deny',before)
 fx['approver'].sph_center_ids=[(5,0,0)]
-env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+env.transaction.invalidate_ormcache();env.cr.commit()
 for record,method,args,model_call,action in (
         (env['purchase.order'],'create',[{'partner_id':fx['supplier'].id}],True,'po.owner'),
         (env['purchase.order'],'sph_prepare',[fx['supplier'].id,fx['product'].id],True,'po.owner'),
@@ -226,18 +225,18 @@ for record,method,args,model_call,action in (
 # Test-only exception: it grants scope, not a native ACL or business approval.
 grant=env.ref('sph_core.group_sph_po_hub')
 fx['approver'].group_ids=[(4,grant.id)]
-env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+env.transaction.invalidate_ormcache();env.cr.commit()
 allow(owned_po,'write','incident.reference',[{'sph_incident_ref':'fixture:incident:explicit-hub'}])
 rows[-1]['path']='explicit_hub'
 fx['approver'].group_ids=[(3,grant.id)]
-env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+env.transaction.invalidate_ormcache();env.cr.commit()
 before=audit_count(env['purchase.order'],'approver','incident.reference','deny')
 response=rpc('approver',owned_po,'write',[{'sph_incident_ref':'fixture:incident:revoked'}])
 assert response.get('error',{}).get('data',{}).get('message')=='Unavailable'
 observed(env['purchase.order'],'approver','incident.reference','deny',before)
 rows[-1]['path']='revoked_hub'
 fx['approver'].sph_center_ids=[(6,0,original_centers)]
-env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+env.transaction.invalidate_ormcache();env.cr.commit()
 assert not env['res.users'].search_count([('group_ids','in',grant.id)])
 assert not env['res.users'].search_count([('group_ids','in',env.ref('sph_core.group_sph_picking_hub').id)])
 exec(compile(open('/opt/sph/scripts/po_scope_live.py').read(),'po_scope_live.py','exec'))

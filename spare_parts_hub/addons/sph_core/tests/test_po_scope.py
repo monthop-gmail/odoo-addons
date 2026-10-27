@@ -4,6 +4,14 @@ from odoo.exceptions import AccessError
 from odoo.tests.common import TransactionCase
 
 
+
+def tier_marker(env):
+    """20.0 links every regular group to base.group_user_regular (a privilege-tier
+    marker that implies nothing); it is not an authority grant."""
+    marker=env.ref('base.group_user_regular')
+    assert not marker.implied_ids
+    return marker
+
 class TestPOCenterScope(TransactionCase):
     def setUp(self):
         super().setUp()
@@ -98,7 +106,7 @@ class TestPOCenterScope(TransactionCase):
     def test_no_seeded_hub_grants_or_acl_implication(self):
         grant=self.env.ref('sph_core.group_sph_po_hub')
         self.assertFalse(self.env['res.users'].search([('group_ids','in',grant.id)]))
-        self.assertFalse(grant.implied_ids)
+        self.assertFalse(grant.implied_ids-tier_marker(self.env))
         rule=self.env.ref('sph_core.scope_purchase_order')
         self.assertTrue(rule.kind=='restriction')
         self.assertNotIn('_sph_scoped',rule.domain)
@@ -376,7 +384,7 @@ class TestPOCenterScope(TransactionCase):
         po_grant=self.env.ref('sph_core.group_sph_po_hub')
         picking_grant=self.env.ref('sph_core.group_sph_picking_hub')
         for grant in (po_grant,picking_grant):
-            self.assertFalse(grant.implied_ids)
+            self.assertFalse(grant.implied_ids-tier_marker(self.env))
             self.assertFalse(self.env['res.users'].search_count([('group_ids','in',grant.id)]))
         rule=self.env.ref('sph_core.scope_stock_picking')
         self.assertTrue(rule.kind=='restriction')

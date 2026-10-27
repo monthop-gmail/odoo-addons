@@ -8,7 +8,7 @@ class Users(models.Model):
     def write(self, values):
         result = super().write(values)
         if "sph_center_ids" in values:
-            self.env.registry.clear_cache()
+            self.env.transaction.invalidate_ormcache()
         return result
 
     def _sph_scoped(self):

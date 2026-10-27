@@ -190,7 +190,7 @@ expiry_evidence={'cron_active':True,'entrypoint':'ir.cron.method_direct_trigger'
 assert {row['winner_actor'] for row in results if row['mode']=='sph_vs_native_assign'}=={'sph','native'}
 assert any(row['observed_lock_waiters']>=2 for row in results), 'UNRUNNABLE: no witnessed contention'
 native_actor.group_ids=[Command.set(native_groups)]
-env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+env.transaction.invalidate_ormcache();env.cr.commit()
 assert not native_actor.has_group('sph_core.group_sph_picking_hub')
 assert not native_actor.has_group('sph_core.group_sph_po_hub')
 print('SPH_G2_RESULT '+json.dumps({'round_count':rounds,'double_allocations':0,

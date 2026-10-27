@@ -11,7 +11,7 @@ def execute(env,fx,rpc,audit_count,observed,rows,sessions):
         fx['bot'].sph_center_ids=[(6,0,center.ids)]
         orders.append(env['purchase.order'].browse(env['purchase.order'].with_user(fx['bot']).sph_prepare(fx['supplier'].id,fx['product'].id)))
     def sync():
-        env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+        env.transaction.invalidate_ormcache();env.cr.commit()
     def snapshot():
         with env.registry.cursor() as cr:
             obs=api.Environment(cr,SUPERUSER_ID,{})

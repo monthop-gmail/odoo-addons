@@ -3,8 +3,8 @@ from odoo.tests.common import TransactionCase
 
 
 class TestSPHSkeleton(TransactionCase):
-    def test_odoo19_community_dependency_registry(self):
-        self.assertEqual(release.version_info[0], 19)
+    def test_odoo20_community_dependency_registry(self):
+        self.assertEqual(release.version_info[0], 20)
         for model in ("stock.quant", "purchase.order", "sale.order", "portal.mixin"):
             self.assertIn(model, self.env.registry.models)
         enterprise = self.env["ir.module.module"].search_count(

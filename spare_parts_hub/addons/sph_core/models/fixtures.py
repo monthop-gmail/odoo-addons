@@ -67,7 +67,7 @@ class SphCenterFixtures(models.Model):
         for number in range(1, 31):
             product = ensure(f"fixture_part_{number:02}", "product.template", {
                 "name": f"FIXTURE Part {number:02}", "default_code": f"FIXTURE-PART-{number:02}",
-                "type": "consu", "is_storable": True, "tracking": "none",
+                "type": "consu", "is_storable": True, "tracking": False,
                 "sph_oem_number": f"FIXTURE-OEM-{number:03}",
                 "sph_alternate_numbers": f"FIXTURE-ALT-{number:03}; FIXTURE-XREF-{number:03}",
                 "sph_fitment_tag_ids": [Command.set([tags[(number - 1) % 2].id])],
@@ -129,7 +129,7 @@ class SphCenterFixtures(models.Model):
         warehouse=self.env.ref('sph_core.fixture_wh_central')
         product=create('product','product.product',{'name':'FIXTURE FLOW A LAST UNIT',
             'default_code':'FIXTURE-FLOW-A-ONE','type':'consu','is_storable':True,
-            'tracking':'none','sph_fixture':True,'list_price':101})
+            'tracking':False,'sph_fixture':True,'list_price':101})
         self.env['stock.quant']._update_available_quantity(product,warehouse.lot_stock_id,1)
         centers=[];reservists=[];requesters=[]
         for label in ('A','B'):
@@ -167,7 +167,7 @@ class SphCenterFixtures(models.Model):
             raise ValidationError('FIXTURE Flow B requires a clean scenario.')
         product=self.env['product.product'].create({'name':'FIXTURE FLOW B SHORTAGE',
             'default_code':'FIXTURE-FLOW-B-ZERO','type':'consu','is_storable':True,
-            'tracking':'none','sph_fixture':True,'list_price':101})
+            'tracking':False,'sph_fixture':True,'list_price':101})
         self.env['ir.model.data'].create({'module':'sph_core','name':'fixture_flow_b_product',
             'model':'product.product','res_id':product.id,'noupdate':True})
         partner=self.env['res.partner'].create({'name':'FIXTURE FLOW B CENTER',

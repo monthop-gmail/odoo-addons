@@ -73,10 +73,6 @@ class PurchaseScope(models.Model):
         elif not self.env.su:self._sph_po_scope(action='po.write')
         return super().write(values)
 
-    def _prepare_picking(self):
-        values=super()._prepare_picking()
-        values['sph_center_id']=self.sudo().sph_center_id.id
-        return values
 
     def check_access(self,operation):
         if self.env.su:return super().check_access(operation)
@@ -102,3 +98,16 @@ class PurchaseScope(models.Model):
         self._sph_po_scope()
         try:return super().export_data(*args,**kwargs)
         except (UserError,MissingError):return self._sph_po_deny('po.export')
+
+
+class PurchaseReceiptCenter(models.Model):
+    # 20.0: purchase.order._prepare_picking is gone; receipts are created from the
+    # moves (stock.move._assign_picking -> _get_new_picking_values).
+    _inherit='stock.move'
+
+    def _get_new_picking_values(self):
+        values=super()._get_new_picking_values()
+        centers=self.sudo().purchase_line_id.order_id.sph_center_id
+        if len(centers)==1:
+            values['sph_center_id']=centers.id
+        return values

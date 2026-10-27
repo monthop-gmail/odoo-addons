@@ -10,9 +10,8 @@ assert env.cr.dbname == 'sph_poc'
 if globals().get('revoke'):
     user = env.ref('sph_core.fixture_user_sph_center_requester')
     user.sph_center_ids = [Command.clear()]
+    env.transaction.invalidate_ormcache()
     env.cr.commit()
-    env.registry.clear_cache()
-    env.registry.signal_changes()
     print(json.dumps({'revoked': True}))
 else:
     users, orders, lists, pickings = prepare(env)
@@ -46,7 +45,6 @@ else:
         'attachment': attachment.id, 'attachment_token': attachment.access_token,
         'products': [env.ref('sph_core.fixture_part_' + key).product_variant_id.id
                      for key in ('01','02','03','04')]}
+    env.transaction.invalidate_ormcache()
     env.cr.commit()
-    env.registry.clear_cache()
-    env.registry.signal_changes()
     print(json.dumps(result))

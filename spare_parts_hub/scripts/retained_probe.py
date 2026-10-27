@@ -55,7 +55,8 @@ snapshot={
 assert len(snapshot['xmlids'])==5
 metadata=env['ir.model.data'].search([('module','=','sph_core'),('name','=','scope_stock_picking')])
 rule=env['ir.access'].browse(metadata.res_id)
-groups={key:{'implied':len(ref(key).implied_ids),'assignees':env['res.users'].search_count([('group_ids','in',ref(key).id)])}
+# 20.0: base.group_user_regular is a privilege-tier marker on every regular group, not a grant
+groups={key:{'implied':len(ref(key).implied_ids-env.ref('base.group_user_regular')),'assignees':env['res.users'].search_count([('group_ids','in',ref(key).id)])}
     for key in ('group_sph_po_hub','group_sph_picking_hub')}
 assert all(row=={'implied':0,'assignees':0} for row in groups.values())
 visibility={}

@@ -9,7 +9,7 @@ def execute_company_scope(env,fx,rpc,audit_count,observed,rows):
         'po_double_validation':'two_step','po_double_validation_amount':0})
     po=env['purchase.order'].browse(env['purchase.order'].with_user(fx['bot']).sph_prepare(
         fx['supplier'].id,fx['product'].id))
-    env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+    env.transaction.invalidate_ormcache();env.cr.commit()
     legitimate={'allowed_company_ids':company.ids,'force_company':company.id}
     response=rpc('approver',po,'sph_review',kwargs={'context':legitimate})
     assert 'error' not in response

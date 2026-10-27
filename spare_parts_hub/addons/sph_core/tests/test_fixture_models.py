@@ -47,7 +47,7 @@ class TestSPHFixtures(TransactionCase):
         self.assertEqual(company.po_double_validation_amount, 0)
         parts = self.env["product.template"].search([("sph_fixture", "=", True)])
         self.assertEqual(len(parts), 30)
-        self.assertTrue(all(p.name.startswith("FIXTURE ") and p.tracking == "none" for p in parts))
+        self.assertTrue(all(p.name.startswith("FIXTURE ") and not p.tracking for p in parts))
         central = self.fixture("wh_central").lot_stock_id
         for number, quantity in ((1, 8), (2, 3), (3, 0), (4, 1)):
             variant = self.fixture(f"part_{number:02}").product_variant_id

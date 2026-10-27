@@ -182,13 +182,18 @@ class TestPurchaseAuthority(TransactionCase):
 
     def test_bot_do_scrap_denied(self):
         before=self.fx['quant'].quantity
+        state=self.fx['scrap'].state
         self.deny('scrap','_action_scrap')
-        self.assertEqual(self.fx['scrap'].state,'draft')
+        # 20.0 scrap moves start confirmed/assigned (not 'draft'): unchanged and not done
+        self.assertEqual(self.fx['scrap'].state,state)
+        self.assertNotEqual(self.fx['scrap'].state,'done')
         self.assertEqual(self.fx['quant'].quantity,before)
 
     def test_bot_scrap_done_write_denied(self):
+        state=self.fx['scrap'].state
         self.deny('scrap','write',{'state':'done'})
-        self.assertEqual(self.fx['scrap'].state,'draft')
+        self.assertEqual(self.fx['scrap'].state,state)
+        self.assertNotEqual(self.fx['scrap'].state,'done')
 
     def test_bot_quant_create_denied(self):
         before=self.env['stock.quant'].search_count([])

@@ -97,7 +97,8 @@ class Order(models.Model):
         if not lines:
             raise UserError('Unavailable')
         for product in lines.product_id.sorted('id'):
-            if not product.sph_fixture or product.tracking != 'none':
+            # 20.0: tracking 'none' was removed; False = tracked by quantity only
+            if not product.sph_fixture or product.tracking:
                 raise UserError('Unavailable')
             lock_stock(self.env, product, warehouse.lot_stock_id)
         # Require all-or-nothing unless the human explicitly elects partial allocation.

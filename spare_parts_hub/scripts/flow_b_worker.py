@@ -22,7 +22,7 @@ try:
         session.update({'db':'sph_poc','uid':user.id,'login':user.login,
             'context':dict(user.with_user(user).context_get()),'session_token':user._compute_session_token(session.sid)})
         root.session_store.save(session);sessions[role]=session.sid
-    env.cr.commit();env.registry.clear_cache();env.registry.signal_changes()
+    env.transaction.invalidate_ormcache();env.cr.commit()
 
     def rpc(role,model,method,args):
         connection=http.client.HTTPConnection('127.0.0.1',8069,timeout=30)
