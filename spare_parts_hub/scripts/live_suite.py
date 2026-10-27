@@ -53,7 +53,9 @@ def run_suite(junit_path=JUNIT):
             failures+=1
             frames=traceback.extract_tb(error.__traceback__)
             if frames: print(name+' failure location: '+Path(frames[-1].filename).name+':'+str(frames[-1].lineno))
-            ET.SubElement(case,'failure',type=type(error).__name__,message='Live gate assertion failed')
+            where=(Path(frames[-1].filename).name+':'+str(frames[-1].lineno)) if frames else '?'
+            ET.SubElement(case,'failure',type=type(error).__name__,message='Live gate assertion failed at '+where).text=(
+                ''.join(traceback.format_exception(error))[-1500:])
             print(name+': FAIL')
         case.set('time',f'{time.monotonic()-started:.6f}')
     suite.set('failures',str(failures));suite.set('skipped',str(skips))
