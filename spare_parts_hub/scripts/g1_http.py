@@ -69,7 +69,9 @@ def execute():
             assert 'error' in rpc(role,model,'export_data',[[ids[1-i]],fields])
             assert 'error' in rpc(role,model,'export_data',[[ids[i]],fields])  # Portal export is wholly denied.
         evidence('test_bidirectional_id_denial',role,False)
-        grouped=rpc(role,'sale.order','read_group',[[['id','in',fixture['orders']]],['sph_center_id'],['sph_center_id']])
+        # 20.0: public read_group(domain, groupby, aggregates) returns tuples; the dict API
+        # the 19.0 client used (fields, groupby) is formatted_read_group.
+        grouped=rpc(role,'sale.order','formatted_read_group',[[['id','in',fixture['orders']]],['sph_center_id'],['__count']])
         assert 'result' in grouped and len(grouped['result'])==1
         evidence('test_search_count_group_export_report',role,False)
         spoof=rpc(role,'sale.order','search',[[['id','=',other]]],{'context':{
