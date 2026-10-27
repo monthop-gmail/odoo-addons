@@ -2,7 +2,7 @@
 import http.client
 import json
 from odoo import api, SUPERUSER_ID
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 from odoo.addons.sph_core.tests.test_purchase_authority import prepare
 
 assert env.cr.dbname=='sph_poc'
@@ -14,10 +14,10 @@ maker_id=env['purchase.order'].with_user(fx['approver']).sph_prepare(fx['supplie
 fx['maker_po']=env['purchase.order'].browse(maker_id)
 sessions={}
 for role in ('bot','approver','operator'):
-    user=fx[role];session=root.session_store.new()
+    user=fx[role];session=session_store().new()
     session.update({'db':'sph_poc','uid':user.id,'login':user.login,
         'context':dict(user.with_user(user).context_get()),'session_token':user._compute_session_token(session.sid)})
-    root.session_store.save(session);sessions[role]=session.sid
+    session_store().save(session);sessions[role]=session.sid
 env.cr.commit()
 rows=[]
 
@@ -79,7 +79,8 @@ observed(quant_model,'bot','quant.create','deny',before)
 rows[-1]['path']='create'
 with env.registry.cursor() as cursor:
     observer=api.Environment(cursor,SUPERUSER_ID,{})
-    assert observer['stock.move'].browse(fx['scrap'].id).state=='draft'
+    # 20.0 scrap moves start confirmed/assigned, never 'draft': denied means not done
+    assert observer['stock.move'].browse(fx['scrap'].id).state!='done'
     assert observer['stock.quant'].browse(fx['quant'].id).quantity==fx['quant'].quantity
 
 # F3: a read-only reservation role cannot convert a draft SO to a commitment.

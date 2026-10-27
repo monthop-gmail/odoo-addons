@@ -3,7 +3,7 @@ No password/API key is created. Ephemeral sessions stay in the disposable filest
 """
 import json
 from odoo import Command
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 from odoo.addons.sph_core.tests.test_center_isolation import prepare
 
 assert env.cr.dbname == 'sph_poc'
@@ -30,11 +30,11 @@ else:
     sessions = {}
     for role in roles:
         user = env.ref('sph_core.fixture_user_' + role)
-        session = root.session_store.new()
+        session = session_store().new()
         session.update({'db': 'sph_poc', 'uid': user.id, 'login': user.login,
             'context': dict(user.with_user(user).context_get()),
             'session_token': user._compute_session_token(session.sid)})
-        root.session_store.save(session)
+        session_store().save(session)
         sessions[role] = session.sid
     rules = env['ir.access'].search(['|', ('group_id', '=', False), ('domain', '!=', False)] + [('model_id.model', 'in', ['sale.order','sale.order.line','product.pricelist','product.pricelist.item','stock.picking','stock.quant'])])
     result = {'rules': [{'name': r.name, 'model': r.model_id.model, 'global': r.kind == 'restriction', 'domain': r.domain} for r in rules], 'sessions': sessions, 'orders': [x.id for x in orders],

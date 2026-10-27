@@ -3,7 +3,7 @@ import http.client
 import sys
 import json
 from odoo import api, Command, SUPERUSER_ID
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 
 sessions={}
 try:
@@ -18,10 +18,10 @@ try:
     order.action_confirm()  # Synthetic authorized setup, not bot Sales authority.
     for role in ('reservist','bot','approver'):
         user=env['res.users'].browse(seed[role+'_uid'])
-        session=root.session_store.new()
+        session=session_store().new()
         session.update({'db':'sph_poc','uid':user.id,'login':user.login,
             'context':dict(user.with_user(user).context_get()),'session_token':user._compute_session_token(session.sid)})
-        root.session_store.save(session);sessions[role]=session.sid
+        session_store().save(session);sessions[role]=session.sid
     env.transaction.invalidate_ormcache();env.cr.commit()
 
     def rpc(role,model,method,args):
@@ -101,7 +101,7 @@ finally:
     cleanup_failed=False
     for sid in sessions.values():
         try:
-            root.session_store.delete(root.session_store.get(sid))
+            session_store().delete(session_store().get(sid))
         except Exception:
             cleanup_failed=True
             print('SPH_SESSION_CLEANUP_FAILURE: Flow B',file=sys.stderr,flush=True)

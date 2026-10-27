@@ -2,7 +2,7 @@
 import http.client
 import json
 from odoo import api, Command, SUPERUSER_ID
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 
 assert env.cr.dbname=='sph_poc'
 bot=env.ref('sph_core.fixture_user_sph_bot')
@@ -18,10 +18,10 @@ order=env['sale.order'].create({'partner_id':center.partner_id.id,'sph_center_id
     'pricelist_id':current.id,'order_line':[Command.create({'product_id':product.id,
         'product_uom_qty':1,'price_unit':105,'discount':0})]})
 line=order.order_line
-session=root.session_store.new()
+session=session_store().new()
 session.update({'db':'sph_poc','uid':bot.id,'login':bot.login,
     'context':dict(bot.with_user(bot).context_get()),'session_token':bot._compute_session_token(session.sid)})
-root.session_store.save(session)
+session_store().save(session)
 env.cr.commit()
 rows=[]
 for record,field,value in ((line,'discount',7),(order,'pricelist_id',alternate.id)):

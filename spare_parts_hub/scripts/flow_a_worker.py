@@ -5,7 +5,7 @@ import sys
 import json
 import time
 from odoo import api, Command, SUPERUSER_ID
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 from odoo.addons.sph_core.models.reservation import LOCK_NAMESPACE
 
 sessions=[]
@@ -24,10 +24,10 @@ try:
         order.action_confirm();orders.append(order.id)
         actor=env['res.users'].browse(uid)
         assert not actor.has_group('stock.group_stock_manager')
-        session=root.session_store.new()
+        session=session_store().new()
         session.update({'db':'sph_poc','uid':uid,'login':actor.login,
             'context':dict(actor.with_user(actor).context_get()),'session_token':actor._compute_session_token(session.sid)})
-        root.session_store.save(session);sessions.append(session.sid)
+        session_store().save(session);sessions.append(session.sid)
     env.transaction.invalidate_ormcache();env.cr.commit()
 
 
@@ -99,7 +99,7 @@ finally:
     cleanup_failed=False
     for sid in sessions:
         try:
-            root.session_store.delete(root.session_store.get(sid))
+            session_store().delete(session_store().get(sid))
         except Exception:
             cleanup_failed=True
             print('SPH_SESSION_CLEANUP_FAILURE: Flow A',file=sys.stderr,flush=True)

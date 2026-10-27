@@ -6,7 +6,7 @@ import http.client
 import json
 import time
 from odoo import api, Command, SUPERUSER_ID
-from odoo.http import root
+from odoo.http.session import session_store  # 20.0: odoo.http.root.session_store -> session_store()
 from odoo.addons.sph_core.models.reservation import LOCK_NAMESPACE
 
 assert env.cr.dbname == 'sph_poc'
@@ -27,11 +27,11 @@ roles = ('sph_hub_operator','sph_warehouse_picker','native_actor')
 sessions = []
 for role in roles:
     user = env.ref('sph_core.fixture_user_'+role)
-    session = root.session_store.new()
+    session = session_store().new()
     session.update({'db':'sph_poc','uid':user.id,'login':user.login,
         'context':dict(user.with_user(user).context_get()),
         'session_token':user._compute_session_token(session.sid)})
-    root.session_store.save(session); sessions.append(session.sid)
+    session_store().save(session); sessions.append(session.sid)
 assert not env.ref('sph_core.fixture_user_sph_warehouse_picker').has_group('stock.group_stock_manager')
 env.cr.commit()
 
@@ -53,6 +53,9 @@ def request(index, order, key, native=False):
 results = []
 for number in range(rounds):
     # Reset through native unreserve/update APIs in a committed setup transaction.
+    # 20.0: end the previous transaction first so this round's snapshot includes the
+    # HTTP workers' committed reservations (REPEATABLE READ keeps an older snapshot).
+    env.cr.commit()
     env.invalidate_all()
     old=env['sph.reservation'].search([('move_id.product_id','=',product.id),('state','=','active')])
     old.move_id._do_unreserve(); old.write({'state':'expired'})
@@ -146,7 +149,8 @@ for number in range(rounds):
         assert replay.get('result',{}).get('reservation_ids')==before
     if native:
         # Release the native allocation before the next independent evidence stage.
-        env.invalidate_all();native_picking.move_ids._do_unreserve();env.cr.commit()
+        # 20.0: commit first so the snapshot sees the HTTP worker's native reservation.
+        env.cr.commit();env.invalidate_all();native_picking.move_ids._do_unreserve();env.cr.commit()
     results.append({'round':number,'mode':'sph_vs_native_assign' if native else 'two_http_reservations','launch_order':list(launch),'winner_actor':('native' if winners[0]==1 else 'sph') if native else 'sph','winners':1,'losers':1,
         'double_allocations':0,'reserved_total':1,'negative_stock':False,'observed_lock_waiters':waiters,
         'loser_message':'native no allocation' if native and winners[0]==0 else 'Unavailable',
@@ -171,6 +175,7 @@ expiry_order=env['sale.order'].create({'partner_id':center.partner_id.id,'sph_ce
 expiry_order.action_confirm()
 env.cr.commit()
 assert 'result' in request(0,expiry_order.id,'FIXTURE cron expiry')
+env.cr.commit()  # 20.0: fresh snapshot after the HTTP reservation
 env.invalidate_all()
 expiry=env['sph.reservation'].search([('order_id','=',expiry_order.id)])
 assert len(expiry)==1 and expiry.move_id.quantity==1
