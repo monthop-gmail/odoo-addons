@@ -13,3 +13,4 @@ Odoo addons สาธารณะ (public) ของ monthop-gmail
 | โมดูล | เวอร์ชัน | ที่มา |
 |---|---|---|
 | legal_forms | 19.0 | มาจาก lawform-odoo |
+| `spare_parts_hub/` (`sph_core`) | 19.0 | PoC ศูนย์อะไหล่สหกรณ์ ย้ายมาจาก `odoo-contributions` `custom-modules/spare-parts-hub-poc` (branch `sph/poc` @ `00260a7`) พร้อม history · ไม่ใช่โมดูลที่ root: addon อยู่ที่ `spare_parts_hub/addons/sph_core` และมี harness + CI ของตัวเอง (`.github/workflows/sph-harness.yml`) · ข้อมูลสมมติเท่านั้น · MIT |

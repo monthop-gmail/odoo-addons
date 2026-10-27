@@ -8,8 +8,20 @@ import tempfile
 from harness import ROOT, PROJECT, ODOO_ARGS
 from upgrade_evidence import upgrade_checks, retained_checks
 
-RETAINED_PREVIOUS='e481eeda8d8fdd3718d8b70c070efa4c7d9edecd'
-PREVIOUS='631cd523d014595411b7726b09a6a5eae8175fd8'
+# odoo-contributions e481eeda / 631cd523, as rewritten by git subtree into odoo-addons
+RETAINED_PREVIOUS='f10ed497fe70433a78e3c3a16f5f4dd6ebca6276'
+PREVIOUS='1260eb1a87cae51475d306412a65fdb93456e875'
+
+
+def folder_tree(rev):
+    """Tree-ish of this folder at rev: <rev>:<folder>, or <rev>: for commits from
+    before the git subtree import (folder content at the root of the split history)."""
+    repo=Path(subprocess.check_output(['git','rev-parse','--show-toplevel'],cwd=ROOT,text=True).strip())
+    folder=ROOT.resolve().relative_to(repo.resolve()).as_posix()
+    if folder!='.' and not subprocess.run(['git','cat-file','-e',rev+':'+folder],cwd=repo,
+            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
+        return rev+':'+folder
+    return rev+':'
 
 
 def execute(retained=False):
@@ -22,12 +34,12 @@ def execute(retained=False):
     try:
         if subprocess.run(['git','cat-file','-e',previous+'^{commit}'],cwd=ROOT,
                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
-            # Public repo, no token/credential needed; checkout remains on sph/poc.
+            # Public repo, no token/credential needed; the checkout stays where it is.
             subprocess.run(['git','fetch','--no-tags','--depth=1','origin',previous],
                 cwd=ROOT,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
         repo=Path(subprocess.check_output(['git','rev-parse','--show-toplevel'],cwd=ROOT,text=True).strip())
-        prefix=str(ROOT.relative_to(repo)/'addons')+'/'
-        archive=subprocess.check_output(['git','archive',previous,prefix.rstrip('/')],cwd=repo)
+        prefix='addons/'
+        archive=subprocess.check_output(['git','archive',folder_tree(previous),'addons'],cwd=repo)
         with tempfile.TemporaryDirectory(prefix='.upgrade-',dir=evidence) as directory:
             work=Path(directory);addons=work/'previous-addons';addons.mkdir()
             with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:

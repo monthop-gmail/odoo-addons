@@ -110,7 +110,7 @@ def execute(directory=None):
     report={'scope':'P0 SYNTHETIC CI/disposable rehearsal; NOT pilot-ready',
         'upgrade_limit':'Empty and retained-SYNTHETIC addon upgrade fixtures only; NOT a production/business-data migration approval',
         'base_sha':BASE,'final_tip_sha':commit,'status':'FAIL',
-        'ci_run_url':'https://github.com/'+os.environ.get('GITHUB_REPOSITORY','monthop-gmail/odoo-contributions')+
+        'ci_run_url':'https://github.com/'+os.environ.get('GITHUB_REPOSITORY','monthop-gmail/odoo-addons')+
             '/actions/runs/'+os.environ.get('GITHUB_RUN_ID','local'),
         'open_items':[{'id':'DN-B8-1','status':'OWNER DECISION NEEDED BEFORE P1',
             'detail':'Picking ownership classification/narrowing for native warehouse; unchanged here.'}],

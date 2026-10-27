@@ -1,6 +1,7 @@
 # SPH synthetic POC infrastructure (B0-B3)
 
-Maintainer and reviewer: **monthop-gmail**. Branch: `sph/poc`.
+Maintainer and reviewer: **monthop-gmail**. Repo `monthop-gmail/odoo-addons`, folder `spare_parts_hub/`
+(moved with history from `odoo-contributions` `custom-modules/spare-parts-hub-poc`, branch `sph/poc` @ `00260a7`).
 
 The MIT [LICENSE](LICENSE) applies **only to this folder's original code and
 documentation**, unlike the repository-level “All rights reserved” statement.
@@ -115,8 +116,8 @@ new tests there as they land. The harness parses every summary and rejects any
 nonzero failure/error count, any ERROR/FAIL line, missing summaries or missing
 listed tests. Runner controls include the former false-pass case `10 failed`.
 
-`.github/workflows/sph-poc.yml` runs on pushes to `sph/poc` and PRs **into
-`sph/poc`**, filtered to this folder and that workflow file. It has only
+`.github/workflows/sph-harness.yml` (repo root) runs on pushes to the series branches and PRs **into
+them**, filtered to this folder and that workflow file. It has only
 `contents: read`, does not persist checkout credentials and uses SHA-pinned
 actions. It runs static pin checks, negative controls and the same clean
 module-install/smoke harness. Other collection folders do not trigger this CI.

@@ -1,7 +1,8 @@
 name: spare-parts-hub-poc
-repository: monthop-gmail/odoo-contributions
-path: custom-modules/spare-parts-hub-poc
-branch: sph/poc
+repository: monthop-gmail/odoo-addons
+path: spare_parts_hub
+branch: '19.0'
+moved_from: monthop-gmail/odoo-contributions custom-modules/spare-parts-hub-poc (branch sph/poc @ 00260a7)
 maintainer: monthop-gmail
 reviewer: monthop-gmail
 license: MIT

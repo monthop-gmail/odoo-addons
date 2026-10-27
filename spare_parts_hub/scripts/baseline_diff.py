@@ -2,8 +2,12 @@
 import json
 import subprocess
 from harness import ROOT
+from upgrade_path import folder_tree
 
-REVIEWED = '7ca94792004f9358e858a03e42139a5b369ddbd2'
+REPO = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], cwd=ROOT, text=True).strip()
+
+# odoo-contributions 7ca94792, as rewritten by git subtree into odoo-addons
+REVIEWED = 'b6d8a4db73c37d8bedbbdf0c24d3ff08e2e960e7'
 FILES = {'p0-evidence-baseline.json', 'p0-baseline-reviews.json'}
 
 
@@ -18,8 +22,8 @@ def execute():
         # Same public read-only fetch pattern as upgrade_path; no credentials.
         subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', REVIEWED],
             cwd=ROOT, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-    paths = subprocess.check_output(['git', 'diff', '--name-only', REVIEWED, 'HEAD', '--',
-        str(ROOT / 'p0-evidence-baseline.json'), str(ROOT / 'p0-baseline-reviews.json')], cwd=ROOT, text=True).splitlines()
+    paths = subprocess.check_output(['git', 'diff', '--name-only', folder_tree(REVIEWED), folder_tree('HEAD'), '--',
+        'p0-evidence-baseline.json', 'p0-baseline-reviews.json'], cwd=REPO, text=True).splitlines()
     result = {'reviewed_sha': REVIEWED, 'source_ref': 'dis-d3424628#172', 'changed_paths': paths,
         'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), 'status': 'FAIL'}
     directory = ROOT / 'evidence'; directory.mkdir(exist_ok=True)
