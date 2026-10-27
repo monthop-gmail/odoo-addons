@@ -158,7 +158,10 @@ def execute(directory=None):
         report['status']='PASS'
     except Exception as error:
         report['error_type']=type(error).__name__
-        if isinstance(error,BaselineReviewRequired):report['error_message']=str(error)
+        # Always record why (all messages are synthetic validation text, no data).
+        report['error_message']=str(error)[:500]
+        import traceback
+        report['error_where']=traceback.extract_tb(error.__traceback__)[-1].name
     files={str(path.relative_to(directory)):hashlib.sha256(path.read_bytes()).hexdigest()
         for path in sorted(directory.rglob('*')) if path.is_file() and not path.name.startswith('P0-')}
     manifest_bytes=json.dumps(files,sort_keys=True,separators=(',',':')).encode()
