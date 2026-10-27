@@ -66,6 +66,19 @@ jobs:
               elif isinstance(node, list):
                   for index, value in enumerate(node):
                       yield from walk(value, f'{path}[{index}]')
+          import xml.etree.ElementTree as ET
+          for path in sorted(pathlib.Path('evidence').glob('**/*.xml')):
+              try:
+                  root = ET.parse(path).getroot()
+              except ET.ParseError:
+                  continue
+              for case in root.iter('testcase'):
+                  for tag in ('failure', 'error', 'skipped'):
+                      node = case.find(tag)
+                      if node is not None:
+                          text = ' | '.join(((node.get('message') or '') + ' ' + (node.text or '')).split('\n'))[:850]
+                          print(f"::error title={path.name} {case.get('name')} {tag}::{text}")
+                          seen += 1
           for path in sorted(pathlib.Path('evidence').glob('**/*.json')):
               try:
                   data = json.loads(path.read_text())
